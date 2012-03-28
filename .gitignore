@@ -1,0 +1,8 @@
+*~
+.*.sw[pno]
+*.html
+*-dot.fig
+out
+*.tar.gz
+*.ps.gz
+data/out

@@ -1,0 +1,62 @@
+{\sffamily\large\bfseries What will you learn in this class?}
+
+In a nutshell, you will learn how to write programs that run fast and
+use computers efficiently. We will start by working out how exactly a
+computer does its job, and what pieces of hardware help it go faster.
+By using examples, we will show you the difference between code that
+goes fast and code that does not, and you will gradually learn to avoid
+the latter.
+
+We will next understand challenges in processor design that strongly
+favor parallel computers--mainly restrictive economical bounds on
+power clock frequency. This shifts the burden to a different part of
+the machine, leading to figures such as bandwidth and latency,
+encountered in memory access and communication. We will learn about
+the many different machine types that have emerged, each optimized for
+a different workload.  For example, a few hundred US dollars will buy
+a parallel computer (a GPU) that is capable of performing, in each
+second, $\sim 4\cdot 10^{12}$ floating point operations (``flops''),
+but only of reading $\sim 5\cdot 10^{10}$ values from memory. We will
+understand the programming of these computers and learn how to analyze
+them, with the goal of figuring out if a given computer is a good fit
+for a target workload.
+
+Here's a rough syllabus of what we will cover:
+\vspace{-1em}
+\begin{itemize}
+\setlength{\itemsep}{-1mm}
+  \item Basic processor architecture\\
+    Performance of sequential code
+  \item Why go parallel? Forms of parallelism
+  \item Shared Memory and OpenMP
+  \item Tools and Debuggers
+  \item GPUs and OpenCL
+  \item Distributed Memory and MPI
+  \item Common Patterns in Parallel Algorithms
+  \item Partitioning and Load Balancing
+\end{itemize}
+
+
+{\sffamily\large\bfseries Who should take this class?}
+
+We welcome students (and researchers!) from all departments at NYU.
+The class is taught at a level suitable for advanced undergraduate and
+entering graduate students. If you have a computational need from an
+existing project, even better! We will try to help you work on your
+project as part of the course.
+To get the most out of the course, you should be a proficient C
+programmer.
+
+We will provide problem sets that accompany the class and reinforce
+the learned material each week. As with each programming-related
+class, actually writing code is the main way of learning, so these
+assignments are an integral part of the course. We will provide
+access to large parallel machines where you can try out what we taught
+you.
+
+If you are taking the class for credit, you will also do a more
+ambitious final project towards the end of the class.
+
+We're looking forward to seeing you in the fall!
+
+\hfill \emph{Marsha Berger} \hfill \emph{Andreas Klöckner}

@@ -1,0 +1,103 @@
+\documentclass[10pt]{article}
+\nonstopmode
+\usepackage{multicol}
+\usepackage{times}
+\usepackage{tikz}
+\usetikzlibrary{positioning}
+\usetikzlibrary{calc}
+\usetikzlibrary{chains}
+\usetikzlibrary{shapes.misc}
+\usetikzlibrary{shapes.symbols}
+\usetikzlibrary{shapes.geometric}
+\usetikzlibrary{fit}
+\usetikzlibrary{shadows}
+\usepackage{sectsty}
+\usepackage[utf8]{inputenc}
+\allsectionsfont{\sffamily}
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{verbatim}
+\usepackage{lipsum}
+\parskip=0.5em
+
+\usepackage[a4paper,margin=2cm]{geometry}
+
+\pagestyle{empty}
+\parindent=0cm
+
+\begin{document}%
+%
+\begin{tikzpicture}[remember picture,overlay,opacity=0.2]
+  \node [below=3cm of current page.north] {
+    \includegraphics[width=1.2\textwidth]{f117-arrows.png}
+  } ;
+\end{tikzpicture}
+\vspace{-5ex}
+
+\begin{center}
+  \fontfamily{phv}
+  {\bfseries\Large
+    Computer code too slow?\\[2mm]
+  }
+  {\bfseries\huge
+    Learn \emph{High-Performance Computing}
+
+    at NYU this fall!
+  }
+
+\end{center}
+
+\begin{multicols}{2}
+\input{abstract}
+\end{multicols}
+
+\begin{center}
+  \fontfamily{phv}
+  {\bfseries\LARGE
+    Save the date! Wednesday 5-7 (Room TBD)\\[1em]
+
+    \Huge http://bit.ly/hpc12
+  }
+\end{center}
+
+\begin{center}
+  \begin{minipage}{0.2\textwidth}
+    \centering
+    \includegraphics[width=0.8\textwidth]{hpc-qr.png}
+
+    \LARGE\textsf{bit.ly/hpc12}
+  \end{minipage}%
+  \begin{minipage}{0.2\textwidth}
+    \centering
+    \includegraphics[width=0.8\textwidth]{opencl-logo.png}
+
+    \Large\fontfamily{phv}\selectfont OpenCL
+  \end{minipage}%
+  \begin{minipage}{0.2\textwidth}
+    \centering
+    \includegraphics[width=0.8\textwidth]{openmpi-logo.pdf}
+
+    \Large\fontfamily{phv}\selectfont MPI
+  \end{minipage}%
+  \begin{minipage}{0.2\textwidth}
+    \includegraphics[angle=35,width=\textwidth]{openmp-logo.png}
+  \end{minipage}%
+  \begin{minipage}{0.2\textwidth}
+    \centering
+    \includegraphics[width=0.8\textwidth]{nyu-logo.pdf}
+  \end{minipage}
+\end{center}
+
+\begin{tikzpicture}[remember picture,overlay]
+  \foreach\i in {0,...,9}
+  {
+    \path (current page.south west) ++(\i*2.1,0) coordinate (tearbase\i) ;
+    \node [anchor=north west,rotate=90,xshift=2em,yshift=-2em] at (tearbase\i) 
+    { \fontfamily{phv}\huge bit.ly/hpc12 } ;
+    \draw (tearbase\i) -- ++(0,5cm) ;
+  }
+\end{tikzpicture}
+%\begin{minipage}{0.45\textwidth}
+%\begin{center}
+\end{document}
+
