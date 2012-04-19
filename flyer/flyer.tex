@@ -44,20 +44,22 @@
 
     at NYU this fall!
   }
-
 \end{center}
-\vspace{1em}
+\vspace{8mm}
 
 \begin{multicols}{2}
 \input{abstract}
 \end{multicols}
 
-\vspace{5mm}
+\vspace{1cm}
 \begin{center}
   \fontfamily{phv}
   {\bfseries\Huge
     Fall Semester 2012, Wednesdays 5-7pm
   }
+
+  {\bfseries\Large CSCI-GA 2945, MATH-GA 2011 }
+
 \end{center}
 
 \begin{center}
@@ -88,15 +90,17 @@
   \end{minipage}
 \end{center}
 
+\begin{comment}
 \begin{tikzpicture}[remember picture,overlay]
   \foreach\i in {0,...,9}
   {
     \path (current page.south west) ++(\i*2.1,0) coordinate (tearbase\i) ;
-    \node [anchor=north west,rotate=90,xshift=2em,yshift=-2em] at (tearbase\i) 
+    \node [anchor=north west,rotate=90,xshift=2em,yshift=-2em] at (tearbase\i)
     { \fontfamily{phv}\huge bit.ly/hpc12 } ;
     \draw (tearbase\i) -- ++(0,5cm) ;
   }
 \end{tikzpicture}
+\end{comment}
 %\begin{minipage}{0.45\textwidth}
 %\begin{center}
 \end{document}
