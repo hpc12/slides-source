@@ -1,0 +1,91 @@
+\usepackage{kloeckislides}
+\nonstopmode
+
+\usepackage[normalem]{ulem}
+%\useoutertheme{split}
+%\useinnertheme{rectangles}
+%\usecolortheme{owl}
+%\usetheme{Singapore}
+
+\usepackage{pifont}
+\usepackage{ifthen}
+
+\setbeamercolor{section in head/foot}{use=structure,bg=structure.fg!25!bg}
+\defbeamertemplate*{footline}{split theme}
+{%
+  \leavevmode%
+  \begin{beamercolorbox}[wd=.5\paperwidth,ht=2.5ex,dp=1.125ex]{section in head/foot}%
+    \insertsectionnavigationhorizontal{\paperwidth}{\hskip0pt plus1filll}{}%
+  \end{beamercolorbox}%
+  %\begin{beamercolorbox}[wd=.5\paperwidth,ht=2.5ex,dp=1.125ex]{subsection in head/foot}%
+    %\insertsubsectionnavigationhorizontal{.5\paperwidth}{}{\hskip0pt plus1filll}%
+  %\end{beamercolorbox}%
+}
+
+
+%\useoutertheme[subsection=false]{miniframes}
+
+\setbeamertemplate{frametitle}[default][center]
+
+\AtBeginDocument{%
+  {
+    \usebeamercolor{section in head/foot}
+  }
+  
+  \pgfdeclareverticalshading{beamer@headfade}{\paperwidth}
+  {%
+    color(0cm)=(bg);
+    color(1.25cm)=(section in head/foot.bg)%
+  }
+
+  \setbeamercolor{section in head/foot}{bg=}
+}
+
+\addtoheadtemplate{\pgfuseshading{beamer@headfade}\vskip-1.25cm}{}
+
+\beamertemplatedotitem
+
+\setbeamercolor{section in head/foot}{parent=palette quaternary}
+\setbeamercolor{subsection in head/foot}{parent=palette primary}
+
+\setbeamercolor{author in head/foot}{parent=section in head/foot}
+\setbeamercolor{title in head/foot}{parent=subsection in head/foot}
+
+
+
+\AtBeginSection[] {
+  \begin{frame}<beamer>
+  \frametitle{Outline}
+  \tableofcontents[sectionstyle=show/shaded,subsectionstyle=show/show/hide]
+\end{frame}
+}
+\AtBeginSubsection[] {
+  \begin{frame}<beamer>
+  \frametitle{Outline}
+  \tableofcontents[sectionstyle=show/shaded,subsectionstyle=show/shaded/hide]
+\end{frame}
+}
+
+\newcommand{\technicality}[2]{%
+  {\strut #1\\
+    \begin{beamercolorbox}[sep=1mm]{block body}
+      #2
+    \end{beamercolorbox}
+  }%
+}
+
+\lstset{
+  language=C++,
+  rangebeginprefix=//\ ,
+  rangeendprefix=//\ ,
+}
+
+\def\weblink#1#2{\href{#1}{\color{blue}\underline{#2}}}
+
+\definecolor{fetch}{RGB}{227,110,35}
+\definecolor{alu}{RGB}{255,188,24}
+\definecolor{context}{RGB}{132,146,175}
+
+\usepackage{keystroke}
+
+\setbeamertemplate{navigation symbols}{}
