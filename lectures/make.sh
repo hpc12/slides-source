@@ -14,7 +14,7 @@ mv "out/$SOURCE.pdf" "out/$SOURCE-prev.pdf" || true
 
 export TEXINPUTS=$TEXINPUTS:.
 export TEXINPUTS=$TEXINPUTS:$SOURCE-media
-export TEXINPUTS=$TEXINPUTS:media:slides:code:loopy-examples
+export TEXINPUTS=$TEXINPUTS:media:slides:code:loopy-examples:../hw
 export TEXINPUTS=$TEXINPUTS:$HOME/research/presentations/slides
 export TEXINPUTS=$TEXINPUTS:$HOME/research/presentations/slides/snippets
 export TEXINPUTS=$TEXINPUTS:$HOME/research/presentations/slides/style

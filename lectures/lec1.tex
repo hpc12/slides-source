@@ -8,12 +8,8 @@
 
 \date{MATH-GA 2011 / CSCI-GA 2945 $\cdot$ September 5, 2012}
 
-\frame{
-  \titlepage
-}
+\frame{\titlepage}
 
-
-\include{titlepage}
 \begin{frame}{Today}
   \tableofcontents[hideallsubsections]
 \end{frame}
@@ -22,6 +18,88 @@
 \section{About this class}
 % -----------------------------------------------------------------------------
 % {{{
+% -----------------------------------------------------------------------------
+\begin{frame}{Course Outline}
+  \begin{tikzpicture}[overlay]
+    \node [above left =1cm of current page.south east,
+    rotate=10,opacity=0.3,yshift=1cm] 
+    { \includegraphics[width=8cm]{dictionary.jpeg} } ;
+  \end{tikzpicture}
+  \begin{columns}
+    \column{0.5\textwidth}
+    \textbf{Part 1: Do} ($\sim 4$)
+
+    \begin{itemize}
+      \item Write, run programs (C)
+      \item Use tools (make, git, gdb)
+      \item OpenMP, MPI, OpenCL
+      \item Correctness in each
+    \end{itemize}
+
+    \medskip
+    \textbf{Part 2: Understand} ($\sim$3)
+
+    \begin{itemize}
+      \item Measure and understand performance
+      \item Basic machine architecture
+      \item CPU machine model
+      \item GPU machine model
+    \end{itemize}
+
+    \column{0.5\textwidth}
+    \textbf{Part 3: Refine} ($\sim$3)
+
+    \begin{itemize}
+      \item Advanced tools \& languages
+      \item Work partitioning
+      \item Common patterns
+      \item Load balancing
+    \end{itemize}
+
+    \medskip
+    \textbf{Part 4: Apply}
+
+    \begin{itemize}
+      \item Find a project\\
+        (start looking \emph{now}!)
+      \item Pitch it to us (5 min)
+      \item Apply what you've learned
+      \item Present (2)
+    \end{itemize}
+  \end{columns}
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{Grading}
+  \Large
+  \begin{itemize}
+    \item 60\% Weekly homework
+    \item 40\% Final project
+  \end{itemize}
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{Sign-up sheet}
+  \begin{center}
+    \includegraphics[height=5cm]{notebook.jpeg}
+  \end{center}
+\end{frame}
+\addimgcredit{Notebook: sxc.hu/abeall}
+% -----------------------------------------------------------------------------
+\begin{frame}{Survey}
+  \begin{columns}
+    \column{0.5\textwidth}
+    \includegraphics[width=\textwidth]{question-mark.jpeg}
+    \column{0.5\textwidth}
+    \begin{itemize}[<+->]
+      \item Home department
+      \item Degree
+      \item Longest program ever written?
+      \item Language?
+      \item Parallel?
+      \item Already have a project?
+    \end{itemize}
+  \end{columns}
+\end{frame}
+\addimgcredit{Question mark: sxc.hu/svilen001}
 % -----------------------------------------------------------------------------
 \begin{frame}{Listserv}
   \begin{center}
@@ -34,7 +112,9 @@
   \begin{center}
     \includegraphics[height=5cm]{camera.jpeg}
 
-    Lecture video will be posted soon after each class.
+    Lecture media will be posted soon after each class.
+
+    (Room audio, lecture audio, screencast, room video)
   \end{center}
 \end{frame}
 \addimgcredit{Camera: sxc.hu/Kolobsek}
@@ -46,10 +126,24 @@
   \end{center}
   \uncover<2>{
     \begin{tikzpicture} [overlay]
-      \node [above right=1cm of current page.south west, draw,drop shadow,fill=white,
-      inner sep=5mm,thick]
+      \node [above right=1cm of current page.south west,
+        draw,drop shadow,fill=white,inner sep=5mm,thick,yshift=2cm]
         {
-          \dots and two extra memory accesses \emph{per memory access}?
+          \includegraphics[width=0.5\textwidth]{hpc-web-screenshot.png}
+        } ;
+    \end{tikzpicture}
+  }
+  \uncover<2>{
+    \begin{tikzpicture} [overlay]
+      \node [above left=1cm of current page.south east,
+        draw,drop shadow,fill=white,inner sep=5mm,thick,
+        text width=0.6\textwidth]
+        {
+          What's there?
+          \begin{itemize}
+            \item \emph{Homework 1}, due next week.
+            \item 
+          \end{itemize}
         } ;
     \end{tikzpicture}
   }

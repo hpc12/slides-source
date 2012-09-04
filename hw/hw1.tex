@@ -43,7 +43,66 @@ After the description of the assignment, you will find a few pages
 that describe tools and procedures. Please make sure to read and
 follow those carefully.
 
-\hrulefill
+\bigskip
+\akteachprobhead{Problem 1: Sorting with trees}
+
+Write a program to sort a sequence of numbers using a
+\weblink{https://en.wikipedia.org/wiki/Binary_tree}{binary tree}.
+Define a \texttt{struct} to represent each node in
+the tree.
+
+\begin{enumerate}[a)]
+\item Read a number \texttt{n} from the command line.
+\item Allocate an array of size \texttt{n} integers. Using
+  \weblink{https://www.gnu.org/software/libc/manual/html_node/ISO-Random.html}{\texttt{rand()}},
+  fill it with \texttt{n} random integers. Make sure to use
+  \texttt{srand()} to pick a seed, for reproducibility.
+\item Build a binary tree from your array of numbers.
+\item Output the sorted list to \texttt{stdout}, one integer
+  per line.
+\item Make sure you free all memory that you've allocated.
+  (Yes, we will check!)
+\item \label{part:tree-asymp}As an expression of \texttt{n}, what is the worst
+possible runtime? What runtime do you expect typically?
+What determines which case you fall into?
+(Don't worry about constant factors or lower-order
+terms in your expressions.)
+\item \label{part:tree-runtime-discuss}Use this
+\weblink{https://gist.github.com/3614336}{timing code}
+to measure the run time you get for a range of list sizes.
+Discuss how your observations match with your prediction
+in part \ref{part:tree-asymp}).
+\end{enumerate}
+
+You will turn in your solution as a
+`\weblink{https://en.wikipedia.org/wiki/Git_\%28software\%29}{\texttt{git}}'
+repository (see below).
+Your submission should be in a subdirectory `\texttt{problem-1}' and
+should consist of at least these two files:
+
+\begin{enumerate}
+  \item Your program, as `\texttt{tree-sort.c}'.
+
+    If your implementation consists of more than this
+    one file, you must also supply a
+    `\weblink{https://en.wikipedia.org/wiki/Make_\%28software\%29}{\texttt{Makefile}}'
+    that will build your program when `\texttt{make}' is entered.
+
+  \item A text file `\texttt{discussion.txt}' containing
+    your solution to parts \ref{part:tree-asymp})
+    and \ref{part:tree-runtime-discuss}) as plain
+    text. (i.e. not Word, PDF, or some such)
+
+    Your answer to each subproblem should be about a short paragraph.
+\end{itemize}
+
+\akteachprobhead{Problem 2: Matrix multiplication}
+
+\begin{figure}
+
+\end{figure}
+
+
 
 Before you begin, please flip through the lecture slides again and
 read the provided links for the things that seem even slightly
@@ -55,7 +114,7 @@ document to help you read up on things you might not already know.
 For this first assignment, you will optimize a routine to multiply
 square matrices. Matrix multiplication is a basic building block in
 many scientific codes; and since it is an $O(n^3)$ algorithm, these
-codes often spend a lot of their time in matrix multiplication. 
+codes often spend a lot of their time in matrix multiplication.
 
 \subsection*{Implementation}
 
@@ -139,7 +198,7 @@ be of help.
 In the starter kit, we provide
 \begin{itemize}
   \item an implementation of the trivial unoptimized matrix multiply
-  code in C. 
+  code in C.
 
   You can find this implementation in \verb|basic_dgemm.c|.
 
@@ -148,7 +207,7 @@ In the starter kit, we provide
   \weblink{http://www.physics.drexel.edu/courses/Comp_Phys/General/C_basics/c_tutorial.html}{tutorial}.
 
   \item a basic blocked matrix multiply from which
-  you can start your implementation. 
+  you can start your implementation.
 
   See \verb|blocked_dgemm.c| in the starter kit.
 
@@ -165,7 +224,7 @@ In the starter kit, we provide
 
   \item a ``Makefile'' that helps you build and run the sample
     code as well as your own code.
-    \weblink{http://en.wikipedia.org/wiki/Make_(software)}{Make} is 
+    \weblink{http://en.wikipedia.org/wiki/Make_(software)}{Make} is
     a program that aids in compiling software. It relies on a file
     called \texttt{Makefile}, which defines a number of
     \emph{targets}. These targets can then be built by typing
@@ -225,18 +284,18 @@ cc -c  "-DCOMPILER=\"cc\"" "-DFLAGS=\"-O2\"" matmul.c
 cc -c  "-DCOMPILER=\"cc\"" "-DFLAGS=\"-O2\"" timing.c
 cc -c  "-DCOMPILER=\"cc\"" "-DFLAGS=\"-O2\"" blas_dgemm.c \
   -I/share/apps/intel/Compiler/11.1/046/mkl//include
-cc -o matmul-blas matmul.o timing.o blas_dgemm.o  -lm -lrt 
-  -L/share/apps/intel/Compiler/11.1/046/mkl//lib/em64t/ 
-  /share/apps/intel/Compiler/11.1/046/mkl/lib/em64t/libmkl_solver_ilp64_sequential.a 
-  -Wl,--start-group -lmkl_intel_ilp64 -lmkl_sequential 
+cc -o matmul-blas matmul.o timing.o blas_dgemm.o  -lm -lrt
+  -L/share/apps/intel/Compiler/11.1/046/mkl//lib/em64t/
+  /share/apps/intel/Compiler/11.1/046/mkl/lib/em64t/libmkl_solver_ilp64_sequential.a
+  -Wl,--start-group -lmkl_intel_ilp64 -lmkl_sequential
   -lmkl_core -Wl,--end-group -lpthread
 
 # The Makefile did some complicated things involving the C compiler (`cc').
 # There were no error messages, so it looks like everything worked.
 #
 # Now let's try and run the resulting binary.
-[ak177@compute-0-97 hw1]$ ./matmul-blas 
-./matmul-blas: error while loading shared libraries: 
+[ak177@compute-0-97 hw1]$ ./matmul-blas
+./matmul-blas: error while loading shared libraries:
   libmkl_intel_ilp64.so: cannot open shared object file: No such file or directory
 
 # That did not work out--the machine cannot find the MKL library, so
@@ -294,10 +353,10 @@ In your submission, we expect to find:
   You should compare all versions of your code, including intermediate
   ones, to
   \begin{itemize}
-    \item the supplied \verb|basic_dgemm.c| and 
-    \item the initial, supplied \verb|blocked_dgemm.c| and 
+    \item the supplied \verb|basic_dgemm.c| and
+    \item the initial, supplied \verb|blocked_dgemm.c| and
     \item the (also supplied) BLAS DGEMM from the
-      Intel Math Kernel libraries. 
+      Intel Math Kernel libraries.
   \end{itemize}
 
   All your comparisons should include a plot showing MFlop/s along the
@@ -324,7 +383,7 @@ In your submission, we expect to find:
 
 \clearpage
 
-\akteachheader{Machine Access and Homework Submission}
+\akteachheader{Machine Access and Homework Submission}{Helpful Hints}
 
 % -----------------------------------------------------------------------------
 \subsection*{Getting Help}
@@ -337,10 +396,10 @@ First of all, please make sure you are subscribed to the class mailing
 list. Someone might have had the same problem as you (and ideally
 already solved it).  If you are subscribing an address ending in
 \texttt{nyu.edu}, you may do so yourself at
-\weblink{http://www.cs.nyu.edu/mailman/listinfo/g22_2945_001_fa10}{the
+\weblink{http://lists.tiker.net/listinfo/hpc12}{the
 list's web page}. If you'd like to subscribe a non-NYU address, email
 Andreas to subscribe you. The list has
-\weblink{http://www.cs.nyu.edu/mailman/private/g22_2945_001_fa10/}{archives}
+\weblink{http://lists.tiker.net/private/hpc12/}{archives}
 where you can check if you've missed anything important.
 
 If your problem concerns the NYU HPC machines, try checking the
@@ -348,11 +407,7 @@ If your problem concerns the NYU HPC machines, try checking the
 If that (and perhaps a bit of Googling around) doesn't answer your
 question, send email to
 \begin{quote}
-  \href{mailto:g22\_2945\_001\_fa10@cs.nyu.edu}{\texttt{g22\_2945\_001\_fa10@cs.nyu.edu}}
-\end{quote}
-or the more convenient alias
-\begin{quote}
-  \href{mailto:nyuhpc10@tiker.net}{\texttt{nyuhpc10@tiker.net}}.
+  \href{mailto:hpc12@tiker.net}{\texttt{hpc12@tiker.net}}.
 \end{quote}
 
 If you would like to discuss a technical issue (i.e. one that isn't
@@ -367,15 +422,19 @@ experience in this class.
 All homework in this class will be UNIX-based. While you
 may be able to get by with Windows on your personal machine, for
 familiarity and ease of use we \emph{strongly} recommend also using
-Linux/Unix/OS~X on your computer.
-\weblink{http://www.ubuntu.com/}{Ubuntu} is a friendly option, and its
-installation process does not require you to do complicated things
-with your hard drive partitions (unless you want to). That said, we
-will not be able to provide technical support regarding your personal
-machine.
+Linux/Unix/OS~X on your own computer.
+To make this easier, we've provided a virtual machine that lets you
+play with all the technologies we'll touch on in this class. (C,
+OpenMP, MPI, OpenCL) This allows you to get started immediately.
+You'll need to install \weblink{http://virtualbox.org}{Virtualbox}
+and then grab the machine image from
 
-As an alternative, there is a lab of rather nice Linux machines
-(quad-core, 4 GiB of RAM) in Warren Weaver Hall rooms 229/230.
+\begin{quote}
+  \url{http://bit.ly/hpc12-vm}
+\end{quote}
+
+are providing a virtual machine image that
+contains all the tools you'll need for this class.
 \end{note}
 
 % -----------------------------------------------------------------------------
@@ -406,7 +465,7 @@ know about \texttt{hpc.nyu.edu}; just say ``yes'' to log in anyhow and
 permanently accept this machine as a known host.
 
 From the bastion host, the only thing you can do is use SSH to access other
-machines. To reach Union Square, type 
+machines. To reach Union Square, type
 \begin{lstlisting}
 hpc$ ssh usq
 \end{lstlisting}
@@ -527,7 +586,7 @@ following functions in our class:
   deadline. As a result, you definitely want to upload your finished
   assignment.
   \item It will allow you to collaborate on your final project with a friend.
-  \item If you are having an issue with your current code, you may 
+  \item If you are having an issue with your current code, you may
   upload it and ask the instructors to view it on \texttt{forge}.
   \item It provides an easy conduit to get code from the HPC clusters
   onto another machine and back.
@@ -574,7 +633,7 @@ $ git config --global user.email you@yourdomain.example.com
 To access the class-wide collaboration space, go to
 \url{http://forge.tiker.net}. Click ``Sign in or create account''.
 Please use your NetID as your user name. The system will confirm your
-email address by sending you a confirmation key.  
+email address by sending you a confirmation key.
 
 \begin{note}
 We have found that these confirmation emails often get flagged as spam
@@ -612,7 +671,7 @@ git clone ssh://git@forge.tiker.net:2234/hw1.git
 You now have a completely independent copy of this repository, and you
 may change any and all files in there and commit your code as you go
 along. (Note that these commits will \emph{not} automatically end up
-on the server--see below!) Pleas take a look at the 
+on the server--see below!) Pleas take a look at the
 \weblink{http://www.kernel.org/pub/software/scm/git/docs/gittutorial.html}{git
 tutorial}. You should at least be familiar with the usage of the commands
 \begin{itemize}
