@@ -19,6 +19,91 @@
 % -----------------------------------------------------------------------------
 % {{{
 % -----------------------------------------------------------------------------
+\begin{frame}{Course Goal}
+
+  \begin{center}
+    \Large
+    Slow code goes in.
+
+    \Huge
+    Speedy code goes out.
+  \end{center}
+
+  \hrulefill
+
+  \bigskip
+  Learn about:
+  \begin{itemize}
+    \item Machines
+    \item Tools / Languages
+    \item Algorithms / Ways of thinking
+    \item Important examples
+  \end{itemize}
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{Define slow?}
+  \begin{columns}
+    \column{0.6\textwidth}
+    \only<1>{
+      \movie[width=\textwidth,height=0.85\textwidth,poster]{}
+      {../lec1-media/ka6d-contour.webm}
+    }
+    \only<2->{
+      \includegraphics[width=\textwidth]{ka6d-contour.png}
+    }
+    \column{0.4\textwidth}
+    \pause
+    \begin{itemize}[<+->]
+      \item Takes about 30 days on a single PC.
+      \item Takes about a day on a GPU.
+    \end{itemize}
+
+    \uncover<+->{
+      That's still pretty crude-looking.
+    }
+
+    \medskip
+    \uncover<+->{
+      Suppose I'd like to double the resolution. (i.e. cut the mesh
+      width $h$ in half.)
+    }
+    \vspace{-2ex}
+    \begin{itemize}[<+->]
+      \item Had $K$ elements. Now?
+      \item Anything else?
+      \item $16\times$ the cost!
+    \end{itemize}
+
+  \end{columns}
+  \uncover<+->{
+    \begin{tikzpicture} [overlay]
+      \node [above right=10mm of current page.south west,
+        draw,drop shadow,fill=white,inner sep=5mm,thick,
+        text width=6cm]
+        {
+          Well, how about 16 GPUs then?
+
+          \bigskip
+          \only<+->{
+            $\rightarrow$ Realistic (high-fidelity) problems are big.
+          }
+
+          \medskip
+          \only<+->{
+            $\rightarrow$ You'll need a bigger hammer.
+          }
+
+          \medskip
+          \only<+>{%
+            \textbf{%
+            You'll need to know \emph{how to use} the bigger hammer.
+          }
+          }
+        } ;
+    \end{tikzpicture}
+  }
+\end{frame}
+% -----------------------------------------------------------------------------
 \begin{frame}{Course Outline}
   \begin{tikzpicture}[overlay]
     \node [above left =1cm of current page.south east,
@@ -64,22 +149,14 @@
         (start looking \emph{now}!)
       \item Pitch it to us (5 min)
       \item Apply what you've learned
-      \item Present (2)
+      \item Present your work (2)
     \end{itemize}
   \end{columns}
 \end{frame}
 % -----------------------------------------------------------------------------
-\begin{frame}{Grading}
-  \Large
-  \begin{itemize}
-    \item 60\% Weekly homework
-    \item 40\% Final project
-  \end{itemize}
-\end{frame}
-% -----------------------------------------------------------------------------
 \begin{frame}{Sign-up sheet}
   \begin{center}
-    \includegraphics[height=5cm]{notebook.jpeg}
+    \includegraphics[height=7cm]{notebook.jpeg}
   \end{center}
 \end{frame}
 \addimgcredit{Notebook: sxc.hu/abeall}
@@ -101,6 +178,48 @@
 \end{frame}
 \addimgcredit{Question mark: sxc.hu/svilen001}
 % -----------------------------------------------------------------------------
+\begin{frame}{Class web page}
+  \begin{columns}
+    \column{0.6\textwidth}
+      \includegraphics[width=\textwidth]{hpc-web-screenshot.png}
+    \column{0.4\textwidth}
+      \Huge
+      \href{http://bit.ly/hpc12}{bit.ly/hpc12}
+  \end{columns}
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{Book 1}
+  \begin{center}
+    \includegraphics[height=7cm]{rauber-ruenger.jpeg}
+  \end{center}
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{Books 2--4}
+  \begin{center}
+    \includegraphics[height=7cm]{scarpino-opencl.jpeg}
+  \end{center}
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{Books 2--4}
+  \begin{center}
+    \includegraphics[height=7cm]{gaster-opencl.jpeg}
+  \end{center}
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{Grading}
+  \Large
+  \begin{itemize}
+    \item 60\% Weekly homework
+    \item 40\% Final project
+  \end{itemize}
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{Books 2--4}
+  \begin{center}
+    \includegraphics[height=7cm]{munshi-opencl.jpeg}
+  \end{center}
+\end{frame}
+% -----------------------------------------------------------------------------
 \begin{frame}{Listserv}
   \begin{center}
     \Huge
@@ -116,43 +235,43 @@
   \end{center}
 \end{frame}
 \addimgcredit{Camera: sxc.hu/Kolobsek}
-% -----------------------------------------------------------------------------
-\begin{frame}{Class web page}
-  \begin{center}
-    \Huge
-    \href{http://bit.ly/hpc12}{bit.ly/hpc12}
-  \end{center}
-  \uncover<2>{
-    \begin{tikzpicture} [overlay]
-      \node [above right=1cm of current page.south west,
-        draw,drop shadow,fill=white,inner sep=5mm,thick,yshift=2cm]
-        {
-          \includegraphics[width=0.5\textwidth]{hpc-web-screenshot.png}
-        } ;
-    \end{tikzpicture}
-  }
-  \uncover<3>{
-    \begin{tikzpicture} [overlay]
-      \node [above left=1cm of current page.south east,
-        draw,drop shadow,fill=white,inner sep=5mm,thick,
-        text width=0.6\textwidth]
-        {
-          What's there?
-          \begin{itemize}
-            \item Link to books
-              \subitem{Free from NYU-net}
-            \item \emph{Homework 1}, due next week
-          \end{itemize}
-        } ;
-    \end{tikzpicture}
-  }
-\end{frame}
 % }}}
 % -----------------------------------------------------------------------------
 \section{HPC: A look around}
 % -----------------------------------------------------------------------------
 % {{{
-% large problems (finite difference) /scaling
+\begin{frame}{Key Realization}
+  \begin{center}
+    \Huge
+    My computer is too slow.
+  \end{center}
+  \uncover<2>{
+    \begin{tikzpicture} [overlay]
+      \node [above left=10mm of current page.south east,
+      draw,drop shadow,fill=white,inner sep=5mm,thick]
+        {
+          Maybe it'll get faster if I wait long enough?
+        } ;
+    \end{tikzpicture}
+  }
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{Moore's law}
+  \begin{center}
+    \includegraphics[height=8cm]{moores-law.pdf}
+  \end{center}
+  \uncover<2>{
+    \begin{tikzpicture} [overlay]
+      \node [above left=10mm of current page.south east,
+      draw,drop shadow,fill=white,inner sep=5mm,thick]
+        {
+          \textbf{Issue:} More transistors $\ne$ faster
+        } ;
+    \end{tikzpicture}
+  }
+\end{frame}
+\addimgcredit{Moore's law: Wikipedia}
+% -----------------------------------------------------------------------------
 % moore's law
 % but: dennard scaling
 % but: people don't think in parallel
