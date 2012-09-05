@@ -81,12 +81,7 @@
         draw,drop shadow,fill=white,inner sep=5mm,thick,
         text width=6cm]
         {
-          Well, how about 16 GPUs then?
-
-          \bigskip
-          \only<+->{
-            $\rightarrow$ Realistic (high-fidelity) problems are big.
-          }
+          Realistic (high-fidelity) problems are big.
 
           \medskip
           \only<+->{
@@ -186,12 +181,38 @@
       \Huge
       \href{http://bit.ly/hpc12}{bit.ly/hpc12}
   \end{columns}
+  \uncover<2>{
+    \begin{tikzpicture} [overlay]
+      \node [above left=10mm of current page.south east,
+      draw,drop shadow,fill=white,inner sep=5mm,thick,
+      text width=0.6\textwidth]
+        {
+          Posted: Homework set 1
+
+          (C warm-up, git, mechanics)
+
+          \emph{Due next week.}
+        } ;
+    \end{tikzpicture}
+  }
 \end{frame}
 % -----------------------------------------------------------------------------
 \begin{frame}{Book 1}
   \begin{center}
     \includegraphics[height=7cm]{rauber-ruenger.jpeg}
   \end{center}
+  \uncover<2>{
+    \begin{tikzpicture} [overlay]
+      \node [above left=10mm of current page.south east,
+      draw,drop shadow,fill=white,inner sep=5mm,thick,
+      text width=0.6\textwidth]
+        {
+          All books accessible from NYU network.
+
+          Links on class web page.
+        } ;
+    \end{tikzpicture}
+  }
 \end{frame}
 % -----------------------------------------------------------------------------
 \begin{frame}{Books 2--4}
@@ -206,18 +227,18 @@
   \end{center}
 \end{frame}
 % -----------------------------------------------------------------------------
+\begin{frame}{Books 2--4}
+  \begin{center}
+    \includegraphics[height=7cm]{munshi-opencl.jpeg}
+  \end{center}
+\end{frame}
+% -----------------------------------------------------------------------------
 \begin{frame}{Grading}
   \Large
   \begin{itemize}
     \item 60\% Weekly homework
     \item 40\% Final project
   \end{itemize}
-\end{frame}
-% -----------------------------------------------------------------------------
-\begin{frame}{Books 2--4}
-  \begin{center}
-    \includegraphics[height=7cm]{munshi-opencl.jpeg}
-  \end{center}
 \end{frame}
 % -----------------------------------------------------------------------------
 \begin{frame}{Listserv}
@@ -243,7 +264,7 @@
 \begin{frame}{Key Realization}
   \begin{center}
     \Huge
-    My computer is too slow.
+    My program is taking too long.
   \end{center}
   \uncover<2>{
     \begin{tikzpicture} [overlay]
@@ -265,36 +286,316 @@
       \node [above left=10mm of current page.south east,
       draw,drop shadow,fill=white,inner sep=5mm,thick]
         {
-          \textbf{Issue:} More transistors $\ne$ faster
+          \textbf{Issue:} More transistors = faster?
+        } ;
+    \end{tikzpicture}
+  }
+  \creditto{Wikipedia}
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{So what does it mean?}
+  \pause
+  \begin{center}
+    \includegraphics[height=5cm]{Gordon_Moore.jpg}
+  \end{center}
+\end{frame}
+\addimgcredit{Gordon Moore: Wikipedia}
+% -----------------------------------------------------------------------------
+\begin{frame}{So what \emph{does} it mean?}
+  \[
+    \frac{\text{Work}}s\; = \;\text{\textbf<2>{\color<2>{red}Clock Frequency}} \; \times \; \text{Work/Clock}
+  \]
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{MOSFETs}
+  \includegraphics[width=\textwidth]{mosfet-scaling.png}
+  \creditto{Intel Corporation}
+  \uncover<2>{
+    \begin{tikzpicture} [overlay]
+      \node [above left=10mm of current page.south east,
+      draw,drop shadow,fill=white,inner sep=5mm,thick,
+      text width=0.5\textwidth]
+        {
+          \includegraphics[width=\textwidth]{dennard-mosfet.png}
+
+          [Dennard et al. `74]
         } ;
     \end{tikzpicture}
   }
 \end{frame}
-\addimgcredit{Moore's law: Wikipedia}
 % -----------------------------------------------------------------------------
-% moore's law
-% but: dennard scaling
-% but: people don't think in parallel
-% MANY types of parallelism (in hw)
-% MANY ways to express parallelism
-% annoying
-% but: the only way to get more perf!
-% venn: correct, fast
-% need to know correct before fast
-%   -> that's how we'll do business
+\begin{frame}{Dennard scaling}
+  \begin{center}
+    \begin{tabular}{l|c}
+      \textbf{Parameter} & \textbf{Factor} \\
+      \hline
+      Dimension & $1/\kappa$ \\
+      Voltage & $1/\kappa$ \\
+      Current & $1/\kappa$ \\
+      Capacitance & $1/\kappa$ \\
+      Delay Time & $1/\kappa$ \\
+      Power dissipation/circuit & $1/\kappa^2$ \\
+      Power density & $1$
+    \end{tabular}
 
-% shared vs distributed memory
-% hpc as a spectator sport
+    \bigskip
+    [Dennard et al. `74, via Bohr `07]
+  \end{center}
 
-% amdahl, speedup, efficiency
-% Flynn: +SPMD +SIMT
+  \uncover<2->{
+    \begin{tikzpicture} [overlay]
+      \node [above right=7mm of current page.south west,
+      draw,drop shadow,fill=white,inner sep=5mm,thick]
+        {
+          Frequency = Delay time${}^{-1}$
+        } ;
+    \end{tikzpicture}
+  }
+  \uncover<3>{
+    \begin{tikzpicture} [overlay]
+      \node [above left=10mm of current page.south east,
+      draw,drop shadow,fill=white,inner sep=5mm,thick,
+    text width=0.5\textwidth]
+        {
+          `New' problem at small scale:
+
+          Sub-threshold leakage
+          (due to low voltage, small structure)
+        } ;
+    \end{tikzpicture}
+  }
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{Robert Dennard}
+  \begin{center}
+    \includegraphics[height=7cm]{dennard.jpeg}
+  \end{center}
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{So what \emph{does} it mean?}
+  \[
+    \frac{\text{Work}}s\; = \;\tikz [baseline=(clock.base)] \node (clock) {Clock Frequency} ; \; \times \; \text{\textbf<3>{\color<3>{red}Work/Clock}}
+  \]
+  \uncover<2->{
+    \tikz [overlay]
+    \node [draw,cross out, red, very thick] at (clock) {\phantom{Clock Frequency}};
+  }
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{Instructions per clock: Intel}
+  \begin{center}
+    \begin{tabular}{l|l|l}
+      CPU & IPC & Year\\
+      \hline
+      Pentium 1    &  1.1 & 1993\\
+      Pentium MMX  &  1.2 & 1996 \\
+      Pentium 3    &   1.9 & 1999 \\
+      Pentium 4 (Willamette)&1.5 & 2003\\
+      Pentium 4 (Northwood)&1.6 & 2003\\
+      Pentium 4 (Prescott)&1.8 & 2003\\
+      Pentium 4 (Gallatin)&1.9 & 2003\\
+      Pentium D      &2 & 2005 \\
+      Pentium M      &2.5 & 2003 \\
+      Core 2         &3 & 2006 \\
+    \end{tabular}
+  \end{center}
+  \creditto{Charlie Brej, \url{http://brej.org/blog/?p=15}}
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{Instructions per clock: AMD}
+  \begin{center}
+    \begin{tabular}{l|l|l}
+      CPU & IPC & Year\\
+      \hline
+      K6 II          &1.1 & 1998\\
+      K6 III         &1.3 & 1999\\
+      Athlon B       &1.9 & 1999 \\
+      Athlon XP      &2 & 2001 \\
+      Athlon 64      &2.3 & 2003\\
+      Athlon 64 X2   &2.5 & 2005\\
+    \end{tabular}
+  \end{center}
+  \creditto{Charlie Brej, \url{http://brej.org/blog/?p=15}}
+  \uncover<2->{
+    \begin{tikzpicture} [overlay]
+      \node [above left=7mm of current page.south east,
+      draw,drop shadow,fill=white,inner sep=5mm,thick]
+        {
+          A failure of the programming model!
+        } ;
+    \end{tikzpicture}
+  }
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{Processor Evolution}
+  \begin{center}
+    \includegraphics[height=8cm]{cpu-ilp-data.png}
+  \end{center}
+  \creditto{\href{http://www.gotw.ca/publications/concurrency-ddj.htm}{Herb Sutter}}
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{Processor Evolution}
+  \begin{center}
+    \includegraphics[height=8cm]{moores-law.pdf}
+  \end{center}
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{Parallel Programming}
+  Parallel programming is \dots
+  \begin{itemize}
+    \item \emph{inevitable} (if you'd like maximal throughput)
+    \item \emph{hard}
+  \end{itemize}
+
+  \bigskip
+  \textbf{Problem:} People don't think `that way'.
+
+  \bigskip
+  ``Automatic parallelization'' has largely been a failure.
+
+  \bigskip
+  $\rightarrow$ People have to be taught to think that way.
+  \hfill \uncover<2>{\textbf{:)}}
+  \uncover<3>{}
+  \uncover<4->{
+    \begin{tikzpicture} [overlay]
+      \node [above left=7mm of current page.south east,
+      draw,drop shadow,fill=white,inner sep=5mm,thick,
+      text width=0.5\textwidth]
+        {
+          \textbf{Bad news:} Parallelism might not even be
+          our worst problem.
+
+          \bigskip
+          Don't just need to compute, also need to
+          transmit information (to memory, say)
+        } ;
+    \end{tikzpicture}
+  }
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{More bad news from Dr. Dennard}
+  \begin{center}
+    \begin{tabular}{l|c}
+      \textbf{Parameter} & \textbf{Factor} \\
+      \hline
+      Dimension & $1/\kappa$ \\
+      Line Resistance & $\kappa$ \\
+      Voltage drop & $\kappa$ \\
+      Response time & $1$ \\
+      Current density & $\kappa$
+    \end{tabular}
+
+    \bigskip
+    [Dennard et al. `74, via Bohr `07]
+  \end{center}
+  \begin{itemize}
+    \item The above scaling law is for on-chip interconnects.
+    \item Off-chip: Similar consideration.
+
+      Current $\sim $ Power \; \emph{vs.}\; response time
+  \end{itemize}
+  \uncover<2>{
+    \begin{tikzpicture} [overlay]
+      \node [above left=7mm of current page.south east,
+      draw,drop shadow,fill=white,inner sep=5mm,thick,
+      text width=0.5\textwidth]
+        {
+          Getting information from
+          \begin{itemize}
+            \item processor to memory
+            \item one computer to the next
+          \end{itemize}
+          is
+          \begin{itemize}
+            \item slow (in \emph{latency})
+            \item power-hungry
+          \end{itemize}
+        } ;
+    \end{tikzpicture}
+  }
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{Summary}
+  Main problems for this class:
+  \begin{enumerate}
+    \item Express parallelism
+    \item Express communication/synchronization
+    \item Analyze, understand run time
+
+      Both theoretically and practically (by measurement)
+  \end{enumerate}
+  1 and 2 are \textbf{language issues!}
+
+  \pause
+  \bigskip
+  A little bit of terminology:
+  \begin{itemize}
+    \item Speedup, Efficiency
+    \item ``Amdahl's law'':
+
+      Speed up 10\% of your program by a factor of 10?
+  \end{itemize}
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{Parallelism as a Language Question}
+  \begin{center}
+    \begin{tikzpicture}
+      \node at (-2,0) (correct) {Correct} ;
+      \node at (2,0) (fast) {Fast} ;
+      \fill [blue,opacity=0.5] (correct) circle (3cm);
+      \draw [thick] (correct) circle (3cm);
+      \fill [red,opacity=0.5] (fast) circle (3cm);
+      \draw [thick] (fast) circle (3cm);
+      \uncover<2->{ \node [yshift=-1cm] at (correct) {\Huge\bfseries 1}; }
+      \uncover<3->{ \node [yshift=-1cm] at (fast) {\Huge\bfseries 2}; }
+    \end{tikzpicture}
+  \end{center}
+  \uncover<4>{
+    \begin{tikzpicture} [overlay]
+      \node [above left=7mm of current page.south east,
+      draw,drop shadow,fill=white,inner sep=5mm,thick]
+        {
+          Now let's get our hands dirty!
+        } ;
+    \end{tikzpicture}
+  }
+\end{frame}
 % }}}
 % -----------------------------------------------------------------------------
 \section{A taste of what's to come}
 % -----------------------------------------------------------------------------
 % {{{
-% vector addition through the paradigms
+\begin{frame}
+  \begin{center}
+    \Huge
+    Demo time!
+  \end{center}
+\end{frame}
 % }}}
+% -----------------------------------------------------------------------------
+\section{Extra stuff}
+% -----------------------------------------------------------------------------
+\begin{frame}{HPC as a Spectator Sport}
+  \includegraphics[width=\textwidth]{top500-list.png}
+  \uncover<2>{
+    \begin{tikzpicture} [overlay]
+      \node [above left=7mm of current page.south east,
+      draw,drop shadow,fill=white,inner sep=5mm,thick]
+        {
+          Know your gigas, teras, petas, and exas.
+        } ;
+    \end{tikzpicture}
+  }
+  \creditto{\url{http://top500.org}}
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{HPC as a Spectator Sport}
+  \includegraphics[width=\textwidth]{top500-performance.png}
+  \creditto{\url{http://top500.org}}
+\end{frame}
+
+% Flynn: +SPMD +SIMT
 
 \questionframe{}
 \imagecreditslide
