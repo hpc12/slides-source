@@ -28,17 +28,6 @@
     \Huge
     Speedy code goes out.
   \end{center}
-
-  \hrulefill
-
-  \bigskip
-  Learn about:
-  \begin{itemize}
-    \item Machines
-    \item Tools / Languages
-    \item Algorithms / Ways of thinking
-    \item Important examples
-  \end{itemize}
 \end{frame}
 % -----------------------------------------------------------------------------
 \begin{frame}{Define slow?}
@@ -54,8 +43,8 @@
     \column{0.4\textwidth}
     \pause
     \begin{itemize}[<+->]
-      \item Takes about 30 days on a single PC.
-      \item Takes about a day on a GPU.
+      \item Took about 30 days on a single PC.
+      \item Took about a day on a GPU.
     \end{itemize}
 
     \uncover<+->{
@@ -192,6 +181,10 @@
           (C warm-up, git, mechanics)
 
           \emph{Due next week.}
+
+          \bigskip
+          Posted: Virtual machine image
+          (instructions in HW1)
         } ;
     \end{tikzpicture}
   }
@@ -307,23 +300,6 @@
   \]
 \end{frame}
 % -----------------------------------------------------------------------------
-\begin{frame}{MOSFETs}
-  \includegraphics[width=\textwidth]{mosfet-scaling.png}
-  \creditto{Intel Corporation}
-  \uncover<2>{
-    \begin{tikzpicture} [overlay]
-      \node [above left=10mm of current page.south east,
-      draw,drop shadow,fill=white,inner sep=5mm,thick,
-      text width=0.5\textwidth]
-        {
-          \includegraphics[width=\textwidth]{dennard-mosfet.png}
-
-          [Dennard et al. `74]
-        } ;
-    \end{tikzpicture}
-  }
-\end{frame}
-% -----------------------------------------------------------------------------
 \begin{frame}{Dennard scaling}
   \begin{center}
     \begin{tabular}{l|c}
@@ -361,6 +337,23 @@
 
           Sub-threshold leakage
           (due to low voltage, small structure)
+        } ;
+    \end{tikzpicture}
+  }
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{MOSFETs}
+  \includegraphics[width=\textwidth]{mosfet-scaling.png}
+  \creditto{Intel Corporation}
+  \uncover<2>{
+    \begin{tikzpicture} [overlay]
+      \node [above left=10mm of current page.south east,
+      draw,drop shadow,fill=white,inner sep=5mm,thick,
+      text width=0.5\textwidth]
+        {
+          \includegraphics[width=\textwidth]{dennard-mosfet.png}
+
+          [Dennard et al. `74]
         } ;
     \end{tikzpicture}
   }
