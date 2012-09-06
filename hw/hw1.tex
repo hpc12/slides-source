@@ -117,9 +117,11 @@ numbers between 0.5 and 2.
   \begin{lstlisting}
     for i = 1 to n
       for j = 1 to n
+        sum = 0
         for k = 1 to n
-          C[i,j] = A[i,k] * B[k,j]
+           sum = sum + A[i,k] * B[k,j]
         end
+        C[i,j] = sum
       end
     end
   \end{lstlisting}
@@ -457,6 +459,7 @@ ssh-rsa AAAABw...vM3XdIbZWwmXH/iNbFWEhZw== hpc@dizzy
 Once you are logged into \texttt{forge}, click your name in the top
 left corner. Click ``Update your account'' on the left and then paste
 the line returned above into the field that says ``Add public key''.
+If you get errors, make sure that there are no explicit newlines in the key.
 Click ``Update your Account''. The key update may take up to two
 minutes to fully complete, so if the `\texttt{git push}' below fails,
 wait for two minutes, and then try again.
@@ -482,14 +485,37 @@ Once you've gotten to a point that you would like to save, say
 $ git add file1.c file2.txt
 $ git commit
 \end{lstlisting}
-\texttt{git} will ask you for a commit message.
+It is easiest to \texttt{git add} one file at a time, from the
+directory in which the file resides.
 
-After your first commit, let's establish a connection between your
-local repository and a repository on forge.  To do this, navigate to
+\begin{note}
+You \emph{can} add entire directories at once, but this is often a bad
+idea. The process typically picks up lots of files (binaries, backups,
+output, data\dots) that you did not mean to check in. If you add some
+of this stuff by accident, you can get rid of it by \texttt{git rm
+\emph{filename}}.
+\end{note}
+
+\texttt{git} will ask you for a commit message in a new \texttt{gedit}
+window. (On other machines, this might drop you into \texttt{vi} or
+some other horror. We'll show you how to deal with that later.)
+
+\begin{note}
+You should not check in backups (ending in \texttt{\~}), executable or
+binary files such as those ending in \texttt{.o} or ones called
+\texttt{a.out}. These can easily be rebuilt from the source code and
+therefore do not need to be saved.
+\end{note}
+
+After your first commit, let's save your repository to the class
+collaboration space. To do this, navigate to
 \url{http://forge.tiker.net/} (or click on ``Project List'' if you're
-already there) and, once there, click on ``Create Project''. You may
-choose a name for the new repository, as well as a ``shortname'' (i.e.
-Unix-level name).
+already there) and, once there, click on ``Create Project''. Note that
+this assumes you have created an account and are logged in, as
+described above.
+
+You may choose a name for the new repository, as well as a
+``shortname'' (i.e.  Unix-level name).
 
 \begin{note}
 To make sure we find your homework, please choose
@@ -528,8 +554,9 @@ You may also navigate to \url{http://forge.tiker.net}, pick your
 project from the list, navigate to the ``Source'' tab and verify that
 the right version of the code is checked in.
 
-From here on out, the cycle of add/commit/push just repeats.  Please
-also take a look at the
+From here on out, the cycle of add/commit/push just repeats. Note that
+you need to \texttt{git add} a file every time you've changed it.
+Please also take a look at the
 \weblink{http://www.kernel.org/pub/software/scm/git/docs/gittutorial.html}{git
 tutorial}. You should at least be familiar with the usage of the
 commands

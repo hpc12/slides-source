@@ -154,7 +154,7 @@
       \item Home department
       \item Degree
       \item Longest program ever written?
-      \item Language?
+        \subitem{in C?}
       \item Parallel?
       \item Already have a project?
     \end{itemize}
@@ -176,18 +176,25 @@
       draw,drop shadow,fill=white,inner sep=5mm,thick,
       text width=0.6\textwidth]
         {
+          Posted: Virtual machine image
+          (instructions in HW1)
+
+          \bigskip
           Posted: Homework set 1
 
           (C warm-up, git, mechanics)
 
           \emph{Due next week.}
-
-          \bigskip
-          Posted: Virtual machine image
-          (instructions in HW1)
         } ;
     \end{tikzpicture}
   }
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{Listserv}
+  \begin{center}
+    \Huge
+    \href{mailto:hpc12@tiker.net}{hpc12@tiker.net}
+  \end{center}
 \end{frame}
 % -----------------------------------------------------------------------------
 \begin{frame}{Book 1}
@@ -232,13 +239,6 @@
     \item 60\% Weekly homework
     \item 40\% Final project
   \end{itemize}
-\end{frame}
-% -----------------------------------------------------------------------------
-\begin{frame}{Listserv}
-  \begin{center}
-    \Huge
-    \href{mailto:hpc12@tiker.net}{hpc12@tiker.net}
-  \end{center}
 \end{frame}
 % -----------------------------------------------------------------------------
 \begin{frame}{Smile! You're on camera}
@@ -300,7 +300,7 @@
   \]
 \end{frame}
 % -----------------------------------------------------------------------------
-\begin{frame}{Dennard scaling}
+\begin{frame}{Dennard scaling of MOSFETs}
   \begin{center}
     \begin{tabular}{l|c}
       \textbf{Parameter} & \textbf{Factor} \\
@@ -309,7 +309,7 @@
       Voltage & $1/\kappa$ \\
       Current & $1/\kappa$ \\
       Capacitance & $1/\kappa$ \\
-      Delay Time & $1/\kappa$ \\
+      \textbf<2>{Delay Time} & $1/\kappa$ \\
       Power dissipation/circuit & $1/\kappa^2$ \\
       Power density & $1$
     \end{tabular}
@@ -422,18 +422,21 @@
 % -----------------------------------------------------------------------------
 \begin{frame}{Processor Evolution}
   \begin{center}
+    \includegraphics[height=8cm]{moores-law.pdf}
+  \end{center}
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{Processor Evolution}
+  \begin{center}
     \includegraphics[height=8cm]{cpu-ilp-data.png}
   \end{center}
   \creditto{\href{http://www.gotw.ca/publications/concurrency-ddj.htm}{Herb Sutter}}
 \end{frame}
 % -----------------------------------------------------------------------------
-\begin{frame}{Processor Evolution}
-  \begin{center}
-    \includegraphics[height=8cm]{moores-law.pdf}
-  \end{center}
-\end{frame}
-% -----------------------------------------------------------------------------
 \begin{frame}{Parallel Programming}
+  High-performance computing \emph{is} parallel computing. (\dots)
+
+  \bigskip
   Parallel programming is \dots
   \begin{itemize}
     \item \emph{inevitable} (if you'd like maximal throughput)
@@ -524,7 +527,7 @@
   \bigskip
   A little bit of terminology:
   \begin{itemize}
-    \item Speedup, Efficiency
+    \item Speedup, Efficiency, Scaling
     \item ``Amdahl's law'':
 
       Speed up 10\% of your program by a factor of 10?
@@ -536,23 +539,16 @@
     \begin{tikzpicture}
       \node at (-2,0) (correct) {Correct} ;
       \node at (2,0) (fast) {Fast} ;
+      \begin{pgfonlayer}{background}
       \fill [blue,opacity=0.5] (correct) circle (3cm);
-      \draw [thick] (correct) circle (3cm);
       \fill [red,opacity=0.5] (fast) circle (3cm);
+      \end{pgfonlayer}
+      \draw [thick] (correct) circle (3cm);
       \draw [thick] (fast) circle (3cm);
       \uncover<2->{ \node [yshift=-1cm] at (correct) {\Huge\bfseries 1}; }
       \uncover<3->{ \node [yshift=-1cm] at (fast) {\Huge\bfseries 2}; }
     \end{tikzpicture}
   \end{center}
-  \uncover<4>{
-    \begin{tikzpicture} [overlay]
-      \node [above left=7mm of current page.south east,
-      draw,drop shadow,fill=white,inner sep=5mm,thick]
-        {
-          Now let's get our hands dirty!
-        } ;
-    \end{tikzpicture}
-  }
 \end{frame}
 % }}}
 % -----------------------------------------------------------------------------
