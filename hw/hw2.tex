@@ -1,0 +1,145 @@
+\documentclass[11pt]{article}
+
+\usepackage[letterpaper,margin=1in]{geometry}
+
+\usepackage{akteach}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{enumerate}
+\usepackage{keystroke}
+
+\usepackage{natbib}
+\newcommand{\doi}[1]{\href{http://dx.doi.org/#1}{doi: #1}}
+
+\lstset{
+  language=Bash,
+  basicstyle=\ttfamily,
+  commentstyle=\color{blue},
+  stringstyle=\color{black},
+}
+
+\begin{document}
+
+\akteachheader{High-Performance Scientific Computing (MATH-GA 2011/ CSCI-GA 2945)}%
+{Homework Set 2}
+\akteachsubheader{Due: September 19, 2012 $\cdot$ Out: September 12, 2012 }
+
+Just like last week, turn in your homework as a repository named like
+``\texttt{hpc12-hw2-netid123}'' on \url{http://forge.tiker.net}.
+
+Also, for this homework, please ensure that your virtual machine sees
+at least two (real) cores. If your personal machine is single-core,
+please get in touch with us about access to a parallel machine. If you
+have a CIMS account, try running on one of the machines on
+\weblink{http://cims.nyu.edu/webapps/content/systems/resources/computeservers}{this
+page}.
+
+\bigskip
+\akteachprobhead{Problem 1: OpenMP Deadlock}
+
+Do problem 6.12 in Rauber/Rünger. Turn in your solution in text
+form as \texttt{problem-1.txt} in your repository.
+
+\bigskip
+
+\akteachprobhead{Problem 2: OpenMP Bugs}
+
+In the repository at \url{https://github.com/hpc12/hw2-problem2},
+you'll find six OpenMP programs, each of which has one or more bugs,
+detailed in the comments at the start of the source file.
+
+Note that these are well-known programs, and it's super-simple to find
+solutions for them on the web. We're aware of that. To state the
+obvious, you'll get more out of this problem if you try to do them on
+your own.
+
+\emph{Hint for program 4:} How much stack space is needed for the
+array? What does the command `\texttt{limit}' tell you about the
+limit on the stack size? What does that command do? (No idea what I've just said?
+Check \weblink{https://en.wikipedia.org/wiki/Stack-based_memory_allocation}{Wikipedia}.
+This problem is
+\weblink{http://linuxtoosx.blogspot.ch/2010/10/stack-overflow-increasing-stack-limit.html}{more
+complicated} on OS X.)
+
+Turn in a fixed version of each program with the same file name as in
+the source repository above, all in a subdirectory `\texttt{problem-2}'
+of your repository. Try to make sure that the output of
+\begin{lstlisting}
+diff -u original/omg_bugN.c hpc12-hw2-netid123/problem-2/omb_bugN.c
+\end{lstlisting}
+makes sense, because that's what I'll be looking at.
+(Check \weblink{https://en.wikipedia.org/wiki/Diff}{this article} to
+make sense of the output.)
+
+\akteachprobhead{Problem 3: Build a tree in parallel}
+
+In this problem, we will parallelize the sorted binary tree build from
+homework 1.
+
+\begin{enumerate}[a)]
+  \item Add timing around the tree building part of your code. (Don't
+  time the output or the generation of the random numbers.)
+  Use the timing code from
+  \weblink{https://github.com/hpc12/lec1-demo}{this repository}
+  to output the insertion rate as millions of insertions per second.
+
+  \item Parallelize the tree insertion, initially without regard for
+  the necessary synchronization. Verify the output of your program.
+
+  Answer the following questions:
+  \begin{enumerate}[1)]
+    \item What types of failures do you observe?
+    \item Explain the failures you are seeing. Can you draw anything
+      conclusions about how your machine performs pointer updates?
+    \item What speedup do you observe on this \emph{incorrect} code?
+    \item What efficiency?
+    \item Are there any synchronizations hidden in your code? Perhaps
+      in any of the C library functions you are using? Which ones?
+  \end{enumerate}
+  (Use timing data for 10 million entries. If you know how caches
+  work, you may check what happens on smaller/larger cases for your
+  own entertainment.)
+
+  \item Now write a version of your code that uses a critical section
+  for synchronization. Verify that the output of your program is
+  correct.
+  \begin{enumerate}[1)]
+    \item What speedup do you observe on your \emph{correct} code?
+    \item What efficiency?
+    \item Explain the performance, relative to the previous
+    parts.
+  \end{enumerate}
+  (Again use timing data for 10 million entries.)
+
+  \item Now write a version of your code that uses per-entry locks
+  for synchronization. Verify that the output of your program is
+  correct.
+  \begin{enumerate}[1)]
+    \item What speedup do you observe on your \emph{correct} code?
+    \item Explain the performance, relative to the previous
+    parts.
+  \end{enumerate}
+  (Again use timing data for 10 million entries.)
+
+  \item Now write a version of your code that uses atomic operations
+  for synchronization. Verify that the output of your program is
+  correct.
+  \begin{enumerate}[1)]
+    \item What speedup do you observe on your \emph{correct} code?
+  \end{enumerate}
+  (Again use timing data for 10 million entries.)
+\end{enumerate}
+
+In a subdirectory `\texttt{problem-3}', turn in the following:
+\begin{itemize}
+  \item An updated \texttt{tree-sort-wrong.c} with no synchronization.
+  \item A version of your code called \texttt{tree-sort-critical.c} with critical
+  sections.
+  \item A version of your code called \texttt{tree-sort-locks.c} with locks.
+  \item A version of your code called \texttt{tree-sort-atomic.c} with atomic operations.
+  \item A plain text file \texttt{answers.txt} where you provide
+  answers to the prompts in parts b), c), d), e).
+\end{itemize}
+
+\end{document}
+
