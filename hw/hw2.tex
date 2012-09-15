@@ -65,12 +65,15 @@ Turn in a fixed version of each program with the same file name as in
 the source repository above, all in a subdirectory `\texttt{problem-2}'
 of your repository. Try to make sure that the output of
 \begin{lstlisting}
-diff -u original/omg_bugN.c hpc12-hw2-netid123/problem-2/omb_bugN.c
+diff -u original/omp_bugN.c hpc12-hw2-netid123/problem-2/omp_bugN.c
 \end{lstlisting}
 makes sense, because that's what I'll be looking at.
 (Check \weblink{https://en.wikipedia.org/wiki/Diff}{this article} to
-make sense of the output.)
+learn how to read the output.)
+In particular, make as few changes as possible, and don't change
+the formatting of the program.
 
+\bigskip
 \akteachprobhead{Problem 3: Build a tree in parallel}
 
 In this problem, we will parallelize the sorted binary tree build from
@@ -89,7 +92,7 @@ homework 1.
   Answer the following questions:
   \begin{enumerate}[1)]
     \item What types of failures do you observe?
-    \item Explain the failures you are seeing. Can you draw anything
+    \item Explain the failures you are seeing. Can you draw any
       conclusions about how your machine performs pointer updates?
     \item What speedup do you observe on this \emph{incorrect} code?
     \item What efficiency?
