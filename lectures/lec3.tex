@@ -1,0 +1,245 @@
+\documentclass[english,compress]{beamer}
+\input{settings}
+
+\begin{document}
+% {{{ front matter
+
+\title{High-Performance Scientific Computing\\Lecture 3: OpenCL}
+
+\date{MATH-GA 2011 / CSCI-GA 2945 $\cdot$ September 19, 2012}
+
+\frame{\titlepage}
+
+\begin{frame}{Today}
+  \tableofcontents[hideallsubsections]
+\end{frame}
+% }}}
+% -----------------------------------------------------------------------------
+\begin{frame}{Admin Bits}
+  \begin{itemize}[<+->]
+    \item New here? Please send email
+    \item Started looking for a final project yet?
+    \item HW1 not found $\rightarrow$ email
+    \item Grading
+    \item Overall pace
+    \item HW3 out on the weekend
+  \end{itemize}
+\end{frame}
+% -----------------------------------------------------------------------------
+\section{HW2}
+% -----------------------------------------------------------------------------
+\begin{frame}{HW2 problem 2}
+  \begin{center}
+  \Huge Demo time
+  \end{center}
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{OpenMP sync primitives}
+  \begin{itemize}[<+->]
+    \item Critical section
+    \item Locks
+    \item Atomics
+      \begin{itemize}
+        \item Update: \texttt{x++;}
+        \item Capture: \texttt{v = x++;}
+        \item Structured: {v = x; x |= expr;} (``Test-and-set'')
+        \item Compare-and-swap (not in OpenMP)
+      \end{itemize}
+  \end{itemize}
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{OpenMP corner case pop quiz 1}
+  \begin{itemize}[<+->]
+    \item May OpenMP directives be nested?
+      \begin{itemize}
+        \item What is an orphaned directive?
+        \item What is close nesting?
+        \item What is a `dynamic extent' of a region?
+      \end{itemize}
+    \item May a worksharing region be closely nested inside
+      another one?
+    \item What happens if I nest two \texttt{critical} regions
+      of the same name?
+  \end{itemize}
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{OpenMP corner case pop quiz 2}
+  \begin{itemize}[<+->]
+    \item Corresponding getter function for
+      \texttt{omp\_set\_num\_threads()}?
+    \item Relation between
+      \texttt{omp\_set\_dynamic()} and \texttt{schedule(dynamic)}?
+    \item What is wrong with this statement?
+      \begin{quote}
+        A barrier region may not be closely nested inside a
+        worksharing region. \hfill {\footnotesize (from the OpenMP tutorial)}
+      \end{quote}
+    \item What threads does a \texttt{barrier} bind to?
+    \item What threads does a \texttt{critical} region bind to?
+  \end{itemize}
+\end{frame}
+% -----------------------------------------------------------------------------
+\section{Chips for Throughput}
+% -----------------------------------------------------------------------------
+% {{{
+\input{cpu-chip-real-estate}
+
+\newcommand{\kayvoncredit}{
+  \begin{tikzpicture}[overlay]
+    \node [xshift=1cm,yshift=0.5cm]
+      at (current page.south west)
+      [font=\scriptsize,fill=gray!30,anchor=south west,opacity=0.5]
+      {Credit: Kayvon Fatahalian (Stanford) };
+  \end{tikzpicture}
+}
+\newcommand{\kayvonframe}[5]{
+
+  \begin{frame}{#1}
+    #4
+    \begin{center}
+    \includegraphics[viewport=#3,clip=true,page=#2,height=0.7\textheight]{kayvon-gpuarch.pdf}
+    \end{center}
+    \kayvoncredit
+    #5
+  \end{frame}
+}
+
+\kayvonframe{``CPU-style'' Cores}{13}{1in 1in 9in 6.5in }{}{}
+\kayvonframe{Slimming down}{14}{1in 1in 9in 6.5in }{}{}
+\kayvonframe{More Space: Double the Number of Cores}{15}{2.5in 1in 8.5in 6.5in }{}{}
+\kayvonframe{\dots again}{16}{4in 1in 9.5in 6.5in }{}{}
+\kayvonframe{\dots and again}{17}{4in 1.35in 9.5in 6.5in }{}{
+  \uncover<2>{
+    \begin{tikzpicture} [overlay]
+      \node [above left=1cm of current page.south east, draw,drop shadow,fill=white,
+      text width=0.6\textwidth, inner xsep=0.5cm,inner ysep=0.5cm,thick]
+        {
+          $\rightarrow$ 16 independent instruction streams
+
+          \medskip
+          Reality: instruction streams not actually
+          very different/independent
+        } ;
+    \end{tikzpicture}
+  }
+}
+\begin{frame}{Saving Yet More Space}
+  \begin{columns}
+    \column{0.5\textwidth}
+      \only<1-2>{%
+      \includegraphics[viewport=1.8in 3.8in 5.45in 6.25in,clip=true,page=19,width=\textwidth]{kayvon-gpuarch.pdf}\\[-0.5mm]
+      \includegraphics[viewport=1.8in 1.35in 5.45in 3.8in,clip=true,page=19,width=\textwidth]{kayvon-gpuarch.pdf}
+      }%
+      \only<3>{%
+      \includegraphics[viewport=1.8in 3.8in 5.45in 6.25in,clip=true,page=20,width=\textwidth]{kayvon-gpuarch.pdf}\\[-0.5mm]
+      \includegraphics[viewport=1.8in 1.35in 5.45in 3.8in,clip=true,page=19,width=\textwidth]{kayvon-gpuarch.pdf}
+      }%
+      \only<4->{%
+      \includegraphics[viewport=1.8in 3.8in 5.45in 6.25in,clip=true,page=20,width=\textwidth]{kayvon-gpuarch.pdf}\\[-0.5mm]
+      \includegraphics[viewport=1.8in 1.35in 5.45in 3.8in,clip=true,page=20,width=\textwidth]{kayvon-gpuarch.pdf}
+      }
+    \column{0.5\textwidth}%
+      \uncover<2->{%
+        \textbf{Idea \#2}
+
+        \medskip
+        Amortize cost/complexity of managing an instruction
+        stream across many ALUs
+
+        \medskip
+        \large \textbf{$\rightarrow$ SIMD}
+      }
+  \end{columns}
+  \kayvoncredit
+\end{frame}
+\kayvonframe{Gratuitous Amounts of Parallelism!}{24}{5in 1.45in 10in 6.75in }{}{
+  \uncover<2->{
+    \begin{tikzpicture} [overlay]
+      \node [below right=1.75cm of current page.north west, draw,drop shadow,fill=white,
+      text width=0.8\textwidth, inner sep=2.5mm,thick]
+        {
+          Example:
+
+          \medskip
+          128 instruction streams in parallel
+
+          16 independent groups of 8 synchronized streams
+        } ;
+    \end{tikzpicture}
+  }
+  \uncover<3>{
+    \begin{tikzpicture} [overlay]
+      \node [above left=1cm of current page.south east, draw,drop shadow,fill=white,
+      text width=0.6\textwidth, inner xsep=0.5cm,inner ysep=0.5cm,thick]
+        {
+          Great if everybody in a group does the same thing.
+
+          \medskip
+          But what if not?
+
+          \medskip
+          What leads to divergent instruction streams?
+        } ;
+    \end{tikzpicture}
+  }
+}
+\kayvonframe{Branches}{26}{0.85in 0.9in 10.5in 6.8in }{}{}
+\kayvonframe{Branches}{27}{0.85in 0.9in 10.5in 6.8in }{}{}
+\kayvonframe{Branches}{28}{0.85in 0.9in 10.5in 6.8in }{}{}
+\kayvonframe{Branches}{29}{0.85in 0.9in 10.5in 6.8in }{}{}
+
+\begin{frame}{Recent Processor Architecture}
+  \begin{columns}
+    \column{0.5\textwidth}
+      \begin{itemize}
+      \item Commodity chips
+      \item ``Infinitely'' many cores
+      \item ``Infinite'' vector width
+      \item Must hide memory latency\\
+        ($\rightarrow$ ILP, SMT)
+      \end{itemize}
+    \column{0.5\textwidth}
+      \begin{itemize}
+      \item Compute bandwidth\\
+        \hfill $\gg$ Memory bandwidth
+      \item Bandwidth only achievable by \emph{homogeneity}
+      \end{itemize}
+      \vspace*{3.5ex}
+  \end{columns}
+  \hspace*{-0.25\textwidth}
+  \begin{tabular}{p{0.25\textwidth}p{0.25\textwidth}p{0.25\textwidth}p{0.25\textwidth}p{0.25\textwidth}}
+  \includegraphics[width=0.25\textwidth]{gt200-die.jpg}
+  &
+  \includegraphics[width=0.25\textwidth]{fermi-die-shot.jpeg}
+  &
+  \centering
+  \includegraphics[width=3.5cm,angle=90]{ivy-bridge-die-shot.jpeg}
+  &
+  \includegraphics[width=0.25\textwidth]{tahiti-die-shot.jpeg}
+  &
+  \includegraphics[width=0.25\textwidth]{gk110-die-shot.jpeg}
+  \\
+  \centering Nv~GT200\par(2008)
+  &
+  \centering Nv~Fermi\par(2010)
+  &
+  \centering Intel IVB\par(2012)
+  &
+  \centering AMD Tahiti \par(2012)
+  &
+  \centering Nv GK110\par(2012?)
+  \end{tabular}
+\end{frame}
+% }}}
+% -----------------------------------------------------------------------------
+\section{Synchronization}
+% -----------------------------------------------------------------------------
+\input{barrier}
+\input{memory-fence}
+\input{cl-atomic}
+% }}}
+\questionframe{}
+\imagecreditslide
+
+\end{document}
+% vim: foldmethod=marker
