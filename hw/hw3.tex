@@ -25,7 +25,53 @@
 \akteachsubheader{Out: September 26, 2012 $\cdot$ Due: October 3, 2012 }
 
 \bigskip
-\akteachprobhead{Problem 1: Compute a Mandelbrot set}
+\akteachprobhead{Problem 1: Image + OpenCL warm-up}
+
+Read in two numbers $w$ and $h$ from the command line and allocate three
+buffers \texttt{red}, \texttt{green}, \texttt{blue} on the compute
+device, each sufficient for $w\times h$ \texttt{unsigned char}s.
+
+
+Write an OpenCL kernel that fills the buffers above with
+linearly blended colors such that
+\begin{itemize}
+  \item The red channel is zero on the left-hand side of your
+    image and 255 (the maximum channel value) on the right-hand side
+    of your image.
+  \item The blue channel is zero on the top of your
+    image and 255 (the maximum channel value) on the bottom
+    of your image.
+  \item The green channel is zero everywhere.
+\end{itemize}
+Write your kernel with a work group size of $1\times 1$ and a
+global size of $w\times h$.
+
+Use the library routines provided in
+\weblink{https://github.com/hpc12/hw3-ppm}{this repository} to
+write a \weblink{https://en.wikipedia.org/wiki/Netpbm_format}{PPM}
+(``portable pixmap'') image file called \texttt{linear-blend.ppm}.
+The file \texttt{test-ppm.c} demonstrates the use of the library.
+
+You may look at the resulting image by typing
+\begin{lstlisting}
+display linear-blend.ppm
+\end{lstlisting}
+
+This command is preinstalled on your virtual machine. If you're not
+using the VM, find an image viewer that can display PPM images.
+
+Note that images are conventionally represented in row-major
+order. In other words, the $x$ coordinate varies fastest in
+memory.
+
+Turn in a main C file \texttt{problem-1/blend.c} along with
+a kernel file \texttt{problem-1/linear-blend.cl}.
+
+Also, please make sure to \emph{not} check the generated image files
+into git. (You'll kill my server if you do. I'm not kidding.)
+
+\bigskip
+\akteachprobhead{Problem 2: Compute a Mandelbrot set}
 
 The \weblink{https://en.wikipedia.org/wiki/Mandelbrot_set}{Mandelbrot
 set} is a subset of the complex numbers that has a surprisingly simple
@@ -52,37 +98,6 @@ above formula can be expressed as
   \item Read in two numbers $w$ and $h$ from the command line and allocate three
     buffers \texttt{red}, \texttt{green}, \texttt{blue} on the compute
     device, each sufficient for $w\times h$ \texttt{unsigned char}s.
-
-  \item Write an OpenCL kernel that fills the buffers above with
-    linearly blended colors such that
-    \begin{itemize}
-      \item The red channel is zero on the left-hand side of your
-        image and 255 (the maximum channel value) on the right-hand side
-        of your image.
-      \item The blue channel is zero on the top of your
-        image and 255 (the maximum channel value) on the bottom
-        of your image.
-      \item The green channel is zero everywhere.
-    \end{itemize}
-
-    Use the library routines provided in
-    \weblink{https://github.com/hpc12/hw3-ppm}{this repository} to
-    write a \weblink{https://en.wikipedia.org/wiki/Netpbm_format}{PPM}
-    (``portable pixmap'') image file called \texttt{linear-blend.ppm}.
-    The file \texttt{test-ppm.c} demonstrates the use of the library.
-
-    You may look at the resulting image by typing
-    \begin{lstlisting}
-    display linear-blend.ppm
-    \end{lstlisting}
-
-    This command is preinstalled on your virtual machine. If you're
-    not using that, find an image viewer that can display PPM images.
-    \label{part:mbrot-linear-blend}
-
-    Note that images are conventionally represented in row-major
-    order. In other words, the $x$ coordinate varies fastest in
-    memory.
 
   \item Write an OpenCL kernel that carries out the Mandelbrot
     iteration for $c=(x,y)$. Let $x$ vary linearly from
@@ -144,11 +159,10 @@ above formula can be expressed as
     interface functions.
 \end{enumerate}
 
-Turn in a main C file \texttt{problem-1/mandelbrot.c} along with
-kernel files \texttt{problem-1/linear-blend.cl},
-\texttt{problem-1/small-wg.cl} and \texttt{problem-1/large-wg.cl},
-corresponding to parts \ref{part:mbrot-linear-blend},
-\ref{part:mbrot-small-wg}, \ref{part:mbrot-large-wg}. Make sure that
+Turn in a main C file \texttt{problem-2/mandelbrot.c} along with
+kernel files \texttt{problem-2/small-wg.cl} and
+\texttt{problem-2/large-wg.cl}, corresponding to parts
+\ref{part:mbrot-small-wg}) and \ref{part:mbrot-large-wg}). Make sure that
 \texttt{mandelbrot.c} exercises all parts of this assignment as
 described above when compiled and run.
 
@@ -156,7 +170,7 @@ Also, please make sure to \emph{not} check the generated image files
 into git. (You'll kill my server if you do. I'm not kidding.)
 
 \bigskip
-\akteachprobhead{Problem 2: Blur an image}
+\akteachprobhead{Problem 3: Blur an image}
 
 In this problem, we're going to make an image ``blurry'' by replacing
 each pixel's value with a weighted average of its neighboring pixels.
@@ -183,27 +197,24 @@ We let
     being the upper left,
   \item $W$ and $H$ be the width and height of the unblurry image,
   \item $k$ be the width of the kernel in pixels (which
-    we'll assume is odd), and
+    we'll assume is even), and
   \item $K(i,j)$ be the value of the red channel of the
     kernel image such that $K(0,0)$ represents the center.
-    We'll also let $l=\lfloor k/2\rfloor$, which is $k$ divided
-    by two and rounded down. (Integer division in C will do the right
-    thing here for positive values.)
+    We'll also let $l=k/2$.
 \end{itemize}
 With these definitions we'll be computing the `convolved' image $g$ as
 \[
-  g(i,j)=\frac{1}{\bar K} \sum_{m,n=-l}^l K(m,n)f(i-m,j-n)
+  g(i,j)=\frac{1}{\bar K} \sum_{m,n=-l}^{l-1} K(m,n)f(i-m,j-n)
   \qquad
   (l\le i <W-l,l\le j<H-l)
 \]
 where
 \[
-  \bar K:=\sum_{m,n=-l}^l K(m,n).
+  \bar K:=\sum_{m,n=-l}^{l-1} K(m,n).
 \]
 \begin{enumerate}[a)]
-  \item Grab \texttt{gaussian-kernel.ppm} from the repository and load
-    it into memory. We will only be using information from the red
-    channel.
+  \item Load \texttt{gaussian-kernel.ppm} into memory. We will only be
+    using information from the red channel.
 
     Precompute $\bar K$ for the kernel you load in (on the host). For
     \texttt{gaussian-kernel.ppm} it should come out to 51548.
@@ -229,18 +240,20 @@ where
     and write the resulting image to \texttt{blurry.ppm}.
 
     Do not worry about the boundaries. In other words, only consider
-    pixels of your image that are $l$ pixels away from the boundary.
+    pixels of your image that are at least $l$ pixels away from the
+    boundary.
 
     Use workgroups of size $16\times 16$.
   \item Write an OpenCL kernel that loads the kernel $K$ into local
-    memory before it starts work.  Do this for each channel of your
-    image, and write the resulting image to \texttt{blurry-local.ppm}.
+    memory before it starts work. Make sure to use synchronization as
+    needed. Again, carry out the convolution for each channel 
+    and write the resulting image to \texttt{blurry-local.ppm}.
 
     Use workgroups of size $16\times 16$.
 
   \item Time the execution of both of the above kernels. Make sure you
-    wait for the compute device at all the right spots. Print the
-    execution time of both kernels.
+    wait for the compute device at all the right spots. Print
+    performance data in terms of pixels/s for both kernels.
   \item Once again make sure you free/release all your buffers,
     command queues, host memory, and whatever other resources you've
     used.
@@ -250,9 +263,9 @@ where
     interface functions and the image reading/allocation functions.
 \end{enumerate}
 
-Turn in a main C file \texttt{problem-2/convolution.c} along with
-kernel files \texttt{problem-2/convolution.cl} and
-\texttt{problem-2/convolution-local.cl}. Make sure that
+Turn in a main C file \texttt{problem-3/convolution.c} along with
+kernel files \texttt{problem-3/convolution.cl} and
+\texttt{problem-3/convolution-local.cl}. Make sure that
 \texttt{convolution.c} exercises all parts of this assignment when
 compiled and run.
 
