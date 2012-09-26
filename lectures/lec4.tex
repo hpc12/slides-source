@@ -4,9 +4,9 @@
 \begin{document}
 % {{{ front matter
 
-\title{High-Performance Scientific Computing\\Lecture 3: OpenCL}
+\title{High-Performance Scientific Computing\\Lecture 4: OpenCL}
 
-\date{MATH-GA 2011 / CSCI-GA 2945 $\cdot$ September 19, 2012}
+\date{MATH-GA 2011 / CSCI-GA 2945 $\cdot$ September 26, 2012}
 
 \frame{\titlepage}
 
@@ -17,12 +17,9 @@
 % -----------------------------------------------------------------------------
 \begin{frame}{Admin Bits}
   \begin{itemize}[<+->]
-    \item New here? Please send email
-    \item Started looking for a final project yet?
-    \item HW1 not found $\rightarrow$ email
-    \item Grading
-    \item Overall pace
-    \item HW3 out on the weekend
+    \item HW1 graded before weekend
+    \item HW2 due
+    \item HW3 out
   \end{itemize}
 \end{frame}
 % -----------------------------------------------------------------------------
@@ -45,37 +42,6 @@
         \item Structured: {v = x; x |= expr;} (``Test-and-set'')
         \item Compare-and-swap (not in OpenMP)
       \end{itemize}
-  \end{itemize}
-\end{frame}
-% -----------------------------------------------------------------------------
-\begin{frame}{OpenMP corner case pop quiz 1}
-  \begin{itemize}[<+->]
-    \item May OpenMP directives be nested?
-      \begin{itemize}
-        \item What is an orphaned directive?
-        \item What is close nesting?
-        \item What is a `dynamic extent' of a region?
-      \end{itemize}
-    \item May a worksharing region be closely nested inside
-      another one?
-    \item What happens if I nest two \texttt{critical} regions
-      of the same name?
-  \end{itemize}
-\end{frame}
-% -----------------------------------------------------------------------------
-\begin{frame}{OpenMP corner case pop quiz 2}
-  \begin{itemize}[<+->]
-    \item Corresponding getter function for
-      \texttt{omp\_set\_num\_threads()}?
-    \item Relation between
-      \texttt{omp\_set\_dynamic()} and \texttt{schedule(dynamic)}?
-    \item What is wrong with this statement?
-      \begin{quote}
-        A barrier region may not be closely nested inside a
-        worksharing region. \hfill {\footnotesize (from the OpenMP tutorial)}
-      \end{quote}
-    \item What threads does a \texttt{barrier} bind to?
-    \item What threads does a \texttt{critical} region bind to?
   \end{itemize}
 \end{frame}
 % -----------------------------------------------------------------------------

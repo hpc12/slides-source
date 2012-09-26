@@ -1,3 +1,3 @@
 #! /bin/sh
 mkdir -p out
-TEXINPUTS=:.. pdflatex -output-directory=out "$1"
+TEXINPUTS=:media pdflatex -output-directory=out "$1"

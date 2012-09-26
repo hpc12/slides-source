@@ -22,10 +22,241 @@
 
 \akteachheader{High-Performance Scientific Computing (MATH-GA 2011/ CSCI-GA 2945)}%
 {Homework Set 3}
-\akteachsubheader{Due: September 26, 2012 $\cdot$ Out: September 19, 2012 }
+\akteachsubheader{Out: September 26, 2012 $\cdot$ Due: October 3, 2012 }
 
 \bigskip
-\akteachprobhead{Problem 1: Sorting with trees}
+\akteachprobhead{Problem 1: Compute a Mandelbrot set}
 
+The \weblink{https://en.wikipedia.org/wiki/Mandelbrot_set}{Mandelbrot
+set} is a subset of the complex numbers that has a surprisingly simple
+mathematical definition, but a surprisingly complicated mathematical
+structure. (Don't know complex numbers?  Don't panic, see below.)
+
+Somewhat formally, it is defined as
+\[
+  \{c \in \mathbb C: \text{The sequence defined by $z_0=0$,
+  $z_n=z_{n-1}^2 +c$ becomes $> 2$ in magnitude for some $n$}\}.
+\]
+So, in order to determine
+
+If your complex number skills are a bit rusty: A complex number
+consists of two real numbers (think \texttt{float}s) $z=(a,b)$.
+If we let $c=(x,y)$ and $z_n=(a_n,b_n)$ (for $n\ge 0$), then the
+above formula can be expressed as
+\begin{align*}
+  a_n &= x-b_{n-1}^2+a_{n-1}^2\\
+  b_n &= y-2a_{n-1}b_{n-1}
+\end{align*}
+
+\begin{enumerate}[a)]
+  \item Read in two numbers $w$ and $h$ from the command line and allocate three
+    buffers \texttt{red}, \texttt{green}, \texttt{blue} on the compute
+    device, each sufficient for $w\times h$ \texttt{unsigned char}s.
+
+  \item Write an OpenCL kernel that fills the buffers above with
+    linearly blended colors such that
+    \begin{itemize}
+      \item The red channel is zero on the left-hand side of your
+        image and 255 (the maximum channel value) on the right-hand side
+        of your image.
+      \item The blue channel is zero on the top of your
+        image and 255 (the maximum channel value) on the bottom
+        of your image.
+      \item The green channel is zero everywhere.
+    \end{itemize}
+
+    Use the library routines provided in
+    \weblink{https://github.com/hpc12/hw3-ppm}{this repository} to
+    write a \weblink{https://en.wikipedia.org/wiki/Netpbm_format}{PPM}
+    (``portable pixmap'') image file called \texttt{linear-blend.ppm}.
+    The file \texttt{test-ppm.c} demonstrates the use of the library.
+
+    You may look at the resulting image by typing
+    \begin{lstlisting}
+    display linear-blend.ppm
+    \end{lstlisting}
+
+    This command is preinstalled on your virtual machine. If you're
+    not using that, find an image viewer that can display PPM images.
+    \label{part:mbrot-linear-blend}
+
+    Note that images are conventionally represented in row-major
+    order. In other words, the $x$ coordinate varies fastest in
+    memory.
+
+  \item Write an OpenCL kernel that carries out the Mandelbrot
+    iteration for $c=(x,y)$. Let $x$ vary linearly from
+    \texttt{xleft} and \texttt{xright} on the left and right, and
+    let $y$ vary linearly from \texttt{ytop} and \texttt{ybottom},
+    on the respective ends of your image. Pass these values as
+    parameters to your kernel.
+
+    Use the following values for the work you turn in:
+    \begin{center}
+      \begin{tabular}{|l|l|}
+        \hline
+        \texttt{xleft} & $-2.13$ \\
+        \hline
+        \texttt{xright} & 0.77 \\
+        \hline
+        \texttt{ytop} & 1.3 \\
+        \hline
+        \texttt{ybottom} & $-1.3$\\
+        \hline
+      \end{tabular}
+    \end{center}
+    But feel free to play around.
+
+    For each pixel of the image, run at most \texttt{max\_iter}
+    iterations, where that is another parameter to your kernel. Stop
+    the iteration when the square of the magnitude of the iterate
+    reaches greater than four. For a complex number $z=(a,b)$, the
+    square of the magnitude is computed as $|z|^2=a^2+b^2$.
+
+    Store the number of iterations until four is exceeded in all
+    channels (red, green, blue) of your image, in such a way that if
+    you used \texttt{max\_iter} iterations, the value becomes 255.
+    (You may use more `interesting' color maps, too, if you like.)
+    Store the resulting image as \texttt{mandelbrot.ppm}.
+
+    Write your kernel with a work group size of $1\times 1$ and a
+    global size of $w\times h$.
+    \label{part:mbrot-small-wg}
+
+  \item Modify your OpenCL kernel so that it uses a workgroup size of
+    $16\times 16$, but make sure that your program can still be run
+    with any $w$ and $h$. (I.e. you will have to handle edge cases.)
+    Store the resulting image as \texttt{mandelbrot-large-wg.ppm}.
+    \label{part:mbrot-large-wg}
+
+  \item Use the \texttt{timing.h} infrastructure from the last two
+    homeworks to time the execution of both the small-workgroup and
+    the large-workgroup case. Make sure to wait for the compute device
+    to finish its job in the right places. Output the performance in
+    millions of pixels per second for each case, to three decimal
+    places.
+
+  \item Make sure you free/release all your buffers, command queues, host
+    memory, and whatever other resources you've used.
+
+    Also make sure that you check for error returns on all functions
+    that can fail, including \texttt{malloc} and \texttt{OpenCL}
+    interface functions.
+\end{enumerate}
+
+Turn in a main C file \texttt{problem-1/mandelbrot.c} along with
+kernel files \texttt{problem-1/linear-blend.cl},
+\texttt{problem-1/small-wg.cl} and \texttt{problem-1/large-wg.cl},
+corresponding to parts \ref{part:mbrot-linear-blend},
+\ref{part:mbrot-small-wg}, \ref{part:mbrot-large-wg}. Make sure that
+\texttt{mandelbrot.c} exercises all parts of this assignment as
+described above when compiled and run.
+
+Also, please make sure to \emph{not} check the generated image files
+into git. (You'll kill my server if you do. I'm not kidding.)
+
+\bigskip
+\akteachprobhead{Problem 2: Blur an image}
+
+In this problem, we're going to make an image ``blurry'' by replacing
+each pixel's value with a weighted average of its neighboring pixels.
+The weighting of the neighbors is given by this picture (which we'll call the
+\emph{kernel}) You can find it in the
+\weblink{https://github.com/hpc12/hw3-ppm}{PPM repository}
+as \texttt{gaussian-kernel.ppm}:
+\begin{center}
+  \includegraphics[width=6cm]{gaussian-kernel.png}
+
+  \textbf{Figure:} The blurring ``kernel'', an
+  image which will provide the weights for our weighted
+  average.
+\end{center}
+This image was made by \texttt{make-gaussian-kernel.c} in the same
+repository, which you can feel free to play with.
+
+If you're on the hunt for fancy words, this whole process of `compute
+weighted average of neighbors for each pixel' is called a
+`\weblink{https://en.wikipedia.org/wiki/Convolution}{convolution}'.
+We let
+\begin{itemize}
+  \item $f(i,j)$ be the pixel value of the unblurry image at position $(i,j)$ with $(0,0)$
+    being the upper left,
+  \item $W$ and $H$ be the width and height of the unblurry image,
+  \item $k$ be the width of the kernel in pixels (which
+    we'll assume is odd), and
+  \item $K(i,j)$ be the value of the red channel of the
+    kernel image such that $K(0,0)$ represents the center.
+    We'll also let $l=\lfloor k/2\rfloor$, which is $k$ divided
+    by two and rounded down. (Integer division in C will do the right
+    thing here for positive values.)
+\end{itemize}
+With these definitions we'll be computing the `convolved' image $g$ as
+\[
+  g(i,j)=\frac{1}{\bar K} \sum_{m,n=-l}^l K(m,n)f(i-m,j-n)
+  \qquad
+  (l\le i <W-l,l\le j<H-l)
+\]
+where
+\[
+  \bar K:=\sum_{m,n=-l}^l K(m,n).
+\]
+\begin{enumerate}[a)]
+  \item Grab \texttt{gaussian-kernel.ppm} from the repository and load
+    it into memory. We will only be using information from the red
+    channel.
+
+    Precompute $\bar K$ for the kernel you load in (on the host). For
+    \texttt{gaussian-kernel.ppm} it should come out to 51548.
+
+  \item Read a file name from the command line and read the image
+    given by that file name. You may assume that both width and height
+    are divisible by 16. If you do assume this, make sure you check
+    for it and print an error if it's not satisfied.
+
+    If you need an image to test with, either use one that you like (a
+    family photo, say) and convert it to PPM by writing
+    \begin{lstlisting}
+    convert my-treasured-family-memory.jpeg test-image.ppm
+    \end{lstlisting}
+    \texttt{convert} is preinstalled in the virtual machine. You may
+    also pass the option \texttt{-geometry WxH} to \texttt{convert}
+    if you need to change the size of the image.
+  \item Write an OpenCL kernel that directly implements the
+    convolution formula above. Make sure to implement the formula
+    using \texttt{floats} by converting all values to that type.
+    Convert back to \texttt{unsigned char} (the image channel data
+    type) on output. Do this for each channel of your image,
+    and write the resulting image to \texttt{blurry.ppm}.
+
+    Do not worry about the boundaries. In other words, only consider
+    pixels of your image that are $l$ pixels away from the boundary.
+
+    Use workgroups of size $16\times 16$.
+  \item Write an OpenCL kernel that loads the kernel $K$ into local
+    memory before it starts work.  Do this for each channel of your
+    image, and write the resulting image to \texttt{blurry-local.ppm}.
+
+    Use workgroups of size $16\times 16$.
+
+  \item Time the execution of both of the above kernels. Make sure you
+    wait for the compute device at all the right spots. Print the
+    execution time of both kernels.
+  \item Once again make sure you free/release all your buffers,
+    command queues, host memory, and whatever other resources you've
+    used.
+
+    Also make sure that you check for error returns on all functions
+    that can fail, including \texttt{malloc}, the \texttt{OpenCL}
+    interface functions and the image reading/allocation functions.
+\end{enumerate}
+
+Turn in a main C file \texttt{problem-2/convolution.c} along with
+kernel files \texttt{problem-2/convolution.cl} and
+\texttt{problem-2/convolution-local.cl}. Make sure that
+\texttt{convolution.c} exercises all parts of this assignment when
+compiled and run.
+
+Also, please make sure to \emph{not} check any large image files
+into git. (You'll kill my server if you do. I'm not kidding.)
 
 \end{document}
