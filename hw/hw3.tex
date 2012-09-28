@@ -24,6 +24,22 @@
 {Homework Set 3}
 \akteachsubheader{Out: September 26, 2012 $\cdot$ Due: October 3, 2012 }
 
+This homework set lets you practice simple uses of OpenCL. There is an
+OpenCL implementation available on your virtual machine, but don't
+expect it to be blazingly fast.  Since running on GPUs is a large part
+of the point of OpenCL, at the end of this assignment you can find
+some instructions for running your code on GPUs available on NYU's HPC
+clusters. For now, this is an optional (but highly recommended) part
+of this assignment. Since we'll be using these machines more over
+time, it'll be helpful to get started on using them now. In order to use
+them, you'll need an HPC account. To get one, you may need to request
+one at the \weblink{https://wikis.nyu.edu/display/NYUHPC/Request+or+Renew}{account request page}.
+
+You may use the \weblink{https://github.com/hpc12/lec4-demo}{Lecture 4
+demo code} as a starting point. (Make sure to look at the files ending
+in \texttt{-soln.c}, not the intentionally problematic `initial'
+codes.
+
 \bigskip
 \akteachprobhead{Problem 1: Image + OpenCL warm-up}
 
@@ -65,7 +81,8 @@ order. In other words, the $x$ coordinate varies fastest in
 memory.
 
 Turn in a main C file \texttt{problem-1/blend.c} along with
-a kernel file \texttt{problem-1/linear-blend.cl}.
+a kernel file \texttt{problem-1/linear-blend.cl}. Also turn in
+a Makefile that builds your code.
 
 Also, please make sure to \emph{not} check the generated image files
 into git. (You'll kill my server if you do. I'm not kidding.)
@@ -83,8 +100,6 @@ Somewhat formally, it is defined as
   \{c \in \mathbb C: \text{The sequence defined by $z_0=0$,
   $z_n=z_{n-1}^2 +c$ becomes $> 2$ in magnitude for some $n$}\}.
 \]
-So, in order to determine
-
 If your complex number skills are a bit rusty: A complex number
 consists of two real numbers (think \texttt{float}s) $z=(a,b)$.
 If we let $c=(x,y)$ and $z_n=(a_n,b_n)$ (for $n\ge 0$), then the
@@ -159,117 +174,250 @@ above formula can be expressed as
     interface functions.
 \end{enumerate}
 
-Turn in a main C file \texttt{problem-2/mandelbrot.c} along with
-kernel files \texttt{problem-2/small-wg.cl} and
-\texttt{problem-2/large-wg.cl}, corresponding to parts
-\ref{part:mbrot-small-wg}) and \ref{part:mbrot-large-wg}). Make sure that
-\texttt{mandelbrot.c} exercises all parts of this assignment as
-described above when compiled and run.
+Turn in a main C file \texttt{problem-2/mandelbrot.c} along with kernel files
+\texttt{problem-2/small-wg.cl} and \texttt{problem-2/large-wg.cl},
+corresponding to parts \ref{part:mbrot-small-wg}) and
+\ref{part:mbrot-large-wg}). Make sure that \texttt{mandelbrot.c} exercises all
+parts of this assignment as described above when compiled and run.  Also turn
+in a Makefile that builds your code.
 
-Also, please make sure to \emph{not} check the generated image files
+Lastly, please make sure to \emph{not} check the generated image files
 into git. (You'll kill my server if you do. I'm not kidding.)
 
-\bigskip
-\akteachprobhead{Problem 3: Blur an image}
+\clearpage
+% -----------------------------------------------------------------------------
+\akteachheader{High-Performance Scientific Computing (MATH-GA 2011/ CSCI-GA 2945)}{Access to the NYU clusters}
+% -----------------------------------------------------------------------------
+\subsection*{Logging into a cluster}
 
-In this problem, we're going to make an image ``blurry'' by replacing
-each pixel's value with a weighted average of its neighboring pixels.
-The weighting of the neighbors is given by this picture (which we'll call the
-\emph{kernel}) You can find it in the
-\weblink{https://github.com/hpc12/hw3-ppm}{PPM repository}
-as \texttt{gaussian-kernel.ppm}:
-\begin{center}
-  \includegraphics[width=6cm]{gaussian-kernel.png}
+All access to the high-performance machines at NYU goes through
+\texttt{hpc.nyu.edu} (a.k.a. the ``bastion host''). You may log in using
+\weblink{http://en.wikipedia.org/wiki/Secure_Shell}{SSH}:
+\begin{lstlisting}
+your-machine$ ssh NETID@hpc.nyu.edu
+\end{lstlisting}%stopzone
 
-  \textbf{Figure:} The blurring ``kernel'', an
-  image which will provide the weights for our weighted
-  average.
-\end{center}
-This image was made by \texttt{make-gaussian-kernel.c} in the same
-repository, which you can feel free to play with.
+Your user name on this machine is your NYU NetID (the same one you use
+to log into NYUHome). Likewise, your password is the same one you use
+to access NYUHome.
 
-If you're on the hunt for fancy words, this whole process of `compute
-weighted average of neighbors for each pixel' is called a
-`\weblink{https://en.wikipedia.org/wiki/Convolution}{convolution}'.
-We let
-\begin{itemize}
-  \item $f(i,j)$ be the pixel value of the unblurry image at position $(i,j)$ with $(0,0)$
-    being the upper left,
-  \item $W$ and $H$ be the width and height of the unblurry image,
-  \item $k$ be the width of the kernel in pixels (which
-    we'll assume is even), and
-  \item $K(i,j)$ be the value of the red channel of the
-    kernel image such that $K(0,0)$ represents the center.
-    We'll also let $l=k/2$.
-\end{itemize}
-With these definitions we'll be computing the `convolved' image $g$ as
-\[
-  g(i,j)=\frac{1}{\bar K} \sum_{m,n=-l}^{l-1} K(m,n)f(i-m,j-n)
-  \qquad
-  (l\le i <W-l,l\le j<H-l)
-\]
-where
-\[
-  \bar K:=\sum_{m,n=-l}^{l-1} K(m,n).
-\]
-\begin{enumerate}[a)]
-  \item Load \texttt{gaussian-kernel.ppm} into memory. We will only be
-    using information from the red channel.
+\begin{note}
+As before, the dollar sign ``\texttt{\$}'' represents a
+command prompt. The actual command you need to type follows after that. For
+clarity, a symbolic host name may precede the dollar sign.
+\end{note}
 
-    Precompute $\bar K$ for the kernel you load in (on the host). For
-    \texttt{gaussian-kernel.ppm} it should come out to 51548.
+The virtual machine comes with \texttt{ssh} pre-installed.  If you are
+using a Windows machine, you may use
+\weblink{http://www.chiark.greenend.org.uk/~sgtatham/putty/}{PuTTY}.
 
-  \item Read a file name from the command line and read the image
-    given by that file name. You may assume that both width and height
-    are divisible by 16. If you do assume this, make sure you check
-    for it and print an error if it's not satisfied.
+The first time you log in, the system will warn you that it does not
+know about \texttt{hpc.nyu.edu}; just say ``yes'' to log in and
+permanently accept this machine as a known host.
 
-    If you need an image to test with, either use one that you like (a
-    family photo, say) and convert it to PPM by writing
-    \begin{lstlisting}
-    convert my-treasured-family-memory.jpeg test-image.ppm
-    \end{lstlisting}
-    \texttt{convert} is preinstalled in the virtual machine. You may
-    also pass the option \texttt{-geometry WxH} to \texttt{convert}
-    if you need to change the size of the image.
-  \item Write an OpenCL kernel that directly implements the
-    convolution formula above. Make sure to implement the formula
-    using \texttt{floats} by converting all values to that type.
-    Convert back to \texttt{unsigned char} (the image channel data
-    type) on output. Do this for each channel of your image,
-    and write the resulting image to \texttt{blurry.ppm}.
+From the bastion host, more or less the only thing you can do is use
+SSH to access other machines. To reach  the ``cuda'' cluster, type
+\begin{lstlisting}
+hpc$ ssh cuda
+\end{lstlisting}%stopzone
+To reach the ``Bowery''  cluster, type
+\begin{lstlisting}
+hpc$ ssh bowery
+\end{lstlisting}%stopzone
+The first time you log in to each, you will again get a warning from
+\texttt{ssh}. Proceed as above.
 
-    Do not worry about the boundaries. In other words, only consider
-    pixels of your image that are at least $l$ pixels away from the
-    boundary.
+The first time you log in, you will also be prompted to set up an SSH key
+pair.  This key pair serves two purposes: First, it will
+allow your jobs to access the cluster's compute nodes on which they
+are supposed to run. Second, it will act as your key to the class
+collaboration space when logged in to the NYU clusters.
 
-    Use workgroups of size $16\times 16$.
-  \item Write an OpenCL kernel that loads the kernel $K$ into local
-    memory before it starts work. Make sure to use synchronization as
-    needed. Again, carry out the convolution for each channel 
-    and write the resulting image to \texttt{blurry-local.ppm}.
+Just hit \Enter when prompted for a passphrase. The interaction will
+look something like this:
 
-    Use workgroups of size $16\times 16$.
+\begin{lstlisting}
+It doesn't appear that you have set up your ssh key.
+This process will make the files:
+     /home/NETID/.ssh/id_rsa.pub
+     /home/NETID/.ssh/id_rsa
 
-  \item Time the execution of both of the above kernels. Make sure you
-    wait for the compute device at all the right spots. Print
-    performance data in terms of pixels/s for both kernels.
-  \item Once again make sure you free/release all your buffers,
-    command queues, host memory, and whatever other resources you've
-    used.
+Generating public/private rsa key pair.
+Enter file in which to save the key (/home/NETID/.ssh/id_rsa):
+Enter passphrase (empty for no passphrase):
+Enter same passphrase again:
+Your identification has been saved in /home/NETID/.ssh/id_rsa.
+Your public key has been saved in /home/NETID/.ssh/id_rsa.pub.
+The key fingerprint is: ...
+\end{lstlisting}
 
-    Also make sure that you check for error returns on all functions
-    that can fail, including \texttt{malloc}, the \texttt{OpenCL}
-    interface functions and the image reading/allocation functions.
-\end{enumerate}
+Now you are logged into the cluster!  More precisely, you will be
+logged into the cluster's so-called `head node'. You may compile your
+programs there, but you are not supposed to run large computations on
+that machine. See the instructions below on how to start computation
+jobs.
 
-Turn in a main C file \texttt{problem-3/convolution.c} along with
-kernel files \texttt{problem-3/convolution.cl} and
-\texttt{problem-3/convolution-local.cl}. Make sure that
-\texttt{convolution.c} exercises all parts of this assignment when
-compiled and run.
+% -----------------------------------------------------------------------------
+\subsection*{Editing files on the clusters}
 
-Also, please make sure to \emph{not} check any large image files
-into git. (You'll kill my server if you do. I'm not kidding.)
+A simple, friendly, somewhat bare-bones editor is available by typing
+\begin{lstlisting}
+$ nano filename.c
+\end{lstlisting}%stopzone
+% -----------------------------------------------------------------------------
+\subsection*{Moving files to and from NYU HPC}
+
+See this
+\weblink{https://wikis.nyu.edu/display/NYUHPC/SCP+through+SSH+Tunneling}{wiki
+page} on how to move data back and forth between your computer and the
+HPC clusters. (Note that if you're moving source code, git via forge is usually
+more convenient.)
+
+Note that if you have access to a machine that has SCP/SFTP accessible
+from the outside network (such as \texttt{access.cims.nyu.edu}), you
+can avoid the tedious two-step process via the bastion host by
+initiating file transfers \emph{from} the clusters.
+
+% -----------------------------------------------------------------------------
+\subsection*{Using \texttt{git} on the clusters}
+
+To use
+\texttt{git} on `cuda', you need to type
+\begin{lstlisting}
+$ module load git/gnu/1.7.2.3
+\end{lstlisting}%stopzone
+and on `bowery', you need to type
+\begin{lstlisting}
+$ module load git/intel/1.7.6.3
+\end{lstlisting}%stopzone
+To avoid having to type this every time, consider adding this command
+to the \texttt{.bashrc} (note the dot!) file in your home directory.
+
+NYU uses the software ``\weblink{http://modules.sourceforge.net/}{Environment
+Modules}'' to manage a variety of software installed on its clusters.
+By typing the `\texttt{module load}' command above, you have already
+used this system to allow you to use \texttt{git}. You may type
+\begin{lstlisting}
+module avail
+\end{lstlisting}
+to find which other software modules are available. In particular, you
+may choose to use the
+\weblink{http://en.wikipedia.org/wiki/Intel\_C\%2B\%2B\_Compiler}{Intel
+Compilers} instead of the default GNU ones. Like \texttt{git}, these
+compilers are activated through the \texttt{module load} commands. The
+NYU HPC Wiki describes these compilers in more detail.
+
+Next, inform \texttt{git} of your name and email address, as before:
+\begin{lstlisting}
+$ git config --global user.name "Your Name Here"
+$ git config --global user.email you@yourdomain.example.com
+\end{lstlisting}
+
+Next, while you are logged into each clster, type
+\begin{lstlisting}
+cluster$ cat $HOME/.ssh/id_rsa.pub
+\end{lstlisting}
+This will print a few lines (technically, just one wrapped line) that
+looks like this:
+\begin{lstlisting}
+ssh-rsa AAAABw...vM3XdIbZWwmXH/iNbFWEhZw== NETID@login-0-1.local
+\end{lstlisting}
+Once you are logged into \texttt{forge}, click your name in the top
+left corner. Click ``Update your account'' on the left and then paste
+the line returned above into the field that says ``Add public key''.
+Click ``Update your Account''. The key update may take up to two
+minutes to fully complete, so if any steps involving git below fail,
+wait for two minutes, and then try again.
+This completes the setup steps that are only required once for each
+cluster.
+
+Next, you may `clone' an existing homework repository by using
+\begin{lstlisting}
+git clone ssh://git@forge.tiker.net:2234/hpc12-hw3-netid123.git
+\end{lstlisting}
+You may make some changes here, do \verb|git add| and \verb|git commit|.
+\verb|git push| will upload them `to the cloud'. Likewise,
+\verb|git pull| will download. That should help you get started. Git
+will also be next week's `tool of the week' in the lecture.
+
+% -----------------------------------------------------------------------------
+\subsection*{Running code on the clusters}
+Here is a sample transcript that starts just after I logged in to the `cuda'
+cluster:
+
+\begin{lstlisting}
+# First, we're getting a list of all `queues' supplied by the scheduler
+# on `cuda'.
+[ak177@cuda ~]$ qstat -Q
+Queue              Max   Tot   Ena   Str   Que   Run   Hld   Wat   Trn   Ext T
+----------------   ---   ---   ---   ---   ---   ---   ---   ---   ---   --- -
+serial               0     0   yes   yes     0     0     0     0     0     0 E
+interactive          0     4   yes   yes     0     0     0     0     0     0 E
+default              0     0   yes   yes     0     0     0     0     0     0 E
+batch                0     0   yes   yes     0     0     0     0     0     0 E
+p12                  0     0   yes   yes     0     0     0     0     0     0 E
+
+# Next, we're submitting an interactive job (-I) to a queue
+# named `interactive' (-q).
+[ak177@cuda ~]$ qsub -q interactive -I
+qsub: waiting for job 2113.cuda.es.its.nyu.edu to start
+qsub: job 2113.cuda.es.its.nyu.edu ready
+
+# Even if you loaded the git module on the head node, you may have to do this
+# again now, because you're now logged into a new machine, a `compute node'.
+# Observe how the prompt has changed.
+[ak177@compute-0-3 ~]$ module load git/gnu/1.7.2.3
+
+# We'll grab the lecture demos...
+[ak177@compute-0-3 ~]$ git clone git://github.com/hpc12/lec4-demo
+Cloning into lec4-demo...
+remote: Counting objects: 65, done.
+remote: Compressing objects: 100% (39/39), done.
+remote: Total 65 (delta 34), reused 56 (delta 25)
+Receiving objects: 100% (65/65), 30.94 KiB, done.
+Resolving deltas: 100% (34/34), done.
+[ak177@compute-0-3 ~]$ cd lec4-demo/
+
+# ...and build them.
+[ak177@compute-0-3 lec4-demo]$ make
+gcc -c -std=gnu99 cl-helper.c
+gcc -std=gnu99 -lrt -lOpenCL -ovec-add vec-add.c cl-helper.o
+gcc -std=gnu99 -lrt -lOpenCL -ovec-add-soln vec-add-soln.c cl-helper.o
+gcc -std=gnu99 -lrt -lOpenCL -oprint-devices print-devices.c cl-helper.o
+gcc -std=gnu99 -lrt -lOpenCL -otranspose transpose.c cl-helper.o
+gcc -std=gnu99 -lrt -lOpenCL -otranspose-soln transpose-soln.c cl-helper.o
+
+# Let's see what devices we have here:
+[ak177@compute-0-3 lec4-demo]$ ./print-devices
+platform 0: vendor 'NVIDIA Corporation'
+  device 0: 'GeForce GTX 285'
+platform 1: vendor 'Advanced Micro Devices, Inc.'
+  device 0: 'Intel(R) Xeon(R) CPU           E5405  @ 2.00GHz'
+
+# Let's run the vector addition demo.
+[ak177@compute-0-3 lec4-demo]$ ./vec-add-soln 10000000 10
+create_context_on: specified device not found.
+Aborted
+
+# Ok, the code is still looking for the "Intel" platform, which doesn't
+# appear to exist here. Let's change "Intel" to "NVIDIA":
+[ak177@compute-0-3 lec4-demo]$ nano vec-add-soln.c
+
+# Rebuild the code:
+[ak177@compute-0-3 lec4-demo]$ make
+gcc -std=gnu99 -lrt -lOpenCL -ovec-add-soln vec-add-soln.c cl-helper.o
+
+# And off we go:
+[ak177@compute-0-3 lec4-demo]$ ./vec-add-soln 10000000 10
+0.001777 s
+135.051488 GB/s
+GOOD
+
+# This command returns you to the head node and frees up the machine
+# for other people. Since the machines are a shared resource, it's
+# common courtesy to log out if you're not actively using the compute node
+# you're logged # into. (It's fine to stay logged into the head node.)
+[ak177@compute-0-3 lec4-demo]$ exit
+\end{lstlisting}
 
 \end{document}

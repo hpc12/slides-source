@@ -1,0 +1,104 @@
+
+\bigskip
+\akteachprobhead{Problem 3: Blur an image}
+
+In this problem, we're going to make an image ``blurry'' by replacing
+each pixel's value with a weighted average of its neighboring pixels.
+The weighting of the neighbors is given by this picture (which we'll call the
+\emph{kernel}) You can find it in the
+\weblink{https://github.com/hpc12/hw3-ppm}{PPM repository}
+as \texttt{gaussian-kernel.ppm}:
+\begin{center}
+  \includegraphics[width=6cm]{gaussian-kernel.png}
+
+  \textbf{Figure:} The blurring ``kernel'', an
+  image which will provide the weights for our weighted
+  average.
+\end{center}
+This image was made by \texttt{make-gaussian-kernel.c} in the same
+repository, which you can feel free to play with.
+
+If you're on the hunt for fancy words, this whole process of `compute
+weighted average of neighbors for each pixel' is called a
+`\weblink{https://en.wikipedia.org/wiki/Convolution}{convolution}'.
+We let
+\begin{itemize}
+  \item $f(i,j)$ be the pixel value of the unblurry image at position $(i,j)$ with $(0,0)$
+    being the upper left,
+  \item $W$ and $H$ be the width and height of the unblurry image,
+  \item $k$ be the width of the kernel in pixels (which
+    we'll assume is even), and
+  \item $K(i,j)$ be the value of the red channel of the
+    kernel image such that $K(0,0)$ represents the center.
+    We'll also let $l=k/2$.
+\end{itemize}
+With these definitions we'll be computing the `convolved' image $g$ as
+\[
+  g(i,j)=\frac{1}{\bar K} \sum_{m,n=-l}^{l-1} K(m,n)f(i-m,j-n)
+  \qquad
+  (l\le i <W-l,l\le j<H-l)
+\]
+where
+\[
+  \bar K:=\sum_{m,n=-l}^{l-1} K(m,n).
+\]
+\begin{enumerate}[a)]
+  \item Load \texttt{gaussian-kernel.ppm} into memory. We will only be
+    using information from the red channel.
+
+    Precompute $\bar K$ for the kernel you load in (on the host). For
+    \texttt{gaussian-kernel.ppm} it should come out to 48424.
+
+  \item Read a file name from the command line and read the image
+    given by that file name. You may assume that both width and height
+    are divisible by 16. If you do assume this, make sure you check
+    for it and print an error if it's not satisfied.
+
+    If you need an image to test with, either use one that you like (a
+    family photo, say) and convert it to PPM by writing
+    \begin{lstlisting}
+    convert my-treasured-family-memory.jpeg test-image.ppm
+    \end{lstlisting}
+    \texttt{convert} is preinstalled in the virtual machine. You may
+    also pass the option \texttt{-geometry WxH} to \texttt{convert}
+    if you need to change the size of the image.
+  \item Write an OpenCL kernel that directly implements the
+    convolution formula above. Make sure to implement the formula
+    using \texttt{floats} by converting all values to that type.
+    Convert back to \texttt{unsigned char} (the image channel data
+    type) on output. Do this for each channel of your image,
+    and write the resulting image to \texttt{blurry.ppm}.
+
+    Do not worry about the boundaries. In other words, only consider
+    pixels of your image that are at least $l$ pixels away from the
+    boundary.
+
+    Use workgroups of size $16\times 16$.
+  \item Write an OpenCL kernel that loads the kernel $K$ into local
+    memory before it starts work. Make sure to use synchronization as
+    needed. Again, carry out the convolution for each channel
+    and write the resulting image to \texttt{blurry-local.ppm}.
+
+    Use workgroups of size $16\times 16$.
+
+  \item Time the execution of both of the above kernels. Make sure you
+    wait for the compute device at all the right spots. Print
+    performance data in terms of pixels/s for both kernels.
+  \item Once again make sure you free/release all your buffers,
+    command queues, host memory, and whatever other resources you've
+    used.
+
+    Also make sure that you check for error returns on all functions
+    that can fail, including \texttt{malloc}, the \texttt{OpenCL}
+    interface functions and the image reading/allocation functions.
+\end{enumerate}
+
+Turn in a main C file \texttt{problem-3/convolution.c} along with
+kernel files \texttt{problem-3/convolution.cl} and
+\texttt{problem-3/convolution-local.cl}. Make sure that
+\texttt{convolution.c} exercises all parts of this assignment when
+compiled and run.
+
+Also, please make sure to \emph{not} check any large image files
+into git. (You'll kill my server if you do. I'm not kidding.)
+

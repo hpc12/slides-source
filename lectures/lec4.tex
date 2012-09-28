@@ -15,34 +15,39 @@
 \end{frame}
 % }}}
 % -----------------------------------------------------------------------------
-\begin{frame}{Admin Bits}
-  \begin{itemize}[<+->]
+\begin{frame}{Bits and pieces}
+  \begin{itemize}
     \item HW1 graded before weekend
     \item HW2 due
     \item HW3 out
+    \item Sign up for HPC account
+    \item Any more OMP questions?
+    \item OMP anecdote
   \end{itemize}
 \end{frame}
 % -----------------------------------------------------------------------------
-\section{HW2}
+\begin{frame}{Final project}
+  Examples from two years ago:
+  \begin{itemize}
+    \item GPU-parallel finite difference solver in flexible geometries
+    \item GPU-parallel password cracking
+    \item MPI-parallel CFD via the vortex method
+    \item GPU-parallel ruling extraction (geometry)
+  \end{itemize}
+  Remarks:
+  \begin{itemize}
+    \item Group projects encouraged!
+    \item Use the mailing list to find buddies
+    \item Non-numerical algorithms ok
+  \end{itemize}
+\end{frame}
 % -----------------------------------------------------------------------------
-\begin{frame}{HW2 problem 2}
+\section{Tool of the day: Make}
+% -----------------------------------------------------------------------------
+\begin{frame}{Make}
   \begin{center}
   \Huge Demo time
   \end{center}
-\end{frame}
-% -----------------------------------------------------------------------------
-\begin{frame}{OpenMP sync primitives}
-  \begin{itemize}[<+->]
-    \item Critical section
-    \item Locks
-    \item Atomics
-      \begin{itemize}
-        \item Update: \texttt{x++;}
-        \item Capture: \texttt{v = x++;}
-        \item Structured: {v = x; x |= expr;} (``Test-and-set'')
-        \item Compare-and-swap (not in OpenMP)
-      \end{itemize}
-  \end{itemize}
 \end{frame}
 % -----------------------------------------------------------------------------
 \section{Chips for Throughput}
@@ -247,6 +252,13 @@
 
 \input{cl-vocabulary}
 
+\begin{frame}{OpenCL Object Diagram}
+  \begin{center}
+  \includegraphics[viewport=1.2in 4in 8.5in 10in,clip=true,page=20,height=0.7\textheight]{opencl-11.pdf}
+  \end{center}
+  \creditto{Credit: Khronos Group}
+\end{frame}
+
 %\khronosslide{OpenCL: Execution Model}{11}
 
 {
@@ -400,8 +412,96 @@
   }
 \end{frame}
 % -----------------------------------------------------------------------------
-\input{cl-atomic}
+\begin{frame}{Atomic Operations}
+  \uncover<+->{
+  Collaborative (inter-block) Global Memory Update:
+  \begin{center}
+  \begin{tikzpicture}[
+    start chain=going right,
+    node distance=1cm,
+    op/.style={draw,thick,fill=blue!50,on chain},
+    every join/.style={},
+    ]
+    \node [op] (read) {Read} ;
+    \node [op] (inc) {Increment} ;
+    \node [op] (write) {Write} ;
+    \draw [thick,->] (read) -- (inc) coordinate [pos=0.5] (r-i);
+    \draw [thick,->] (inc) -- (write) coordinate [pos=0.5] (i-w);
+    \uncover<+->{
+      \node at (r-i) [arrow box,fill=yellow,
+        arrow box arrows={north:0.5cm},below,draw,thick]
+        {Interruptible!} ;
+    }
+    \uncover<+->{
+      \node at (i-w) [arrow box,fill=yellow,
+        arrow box arrows={north:0.5cm},below,draw,thick]
+        {Interruptible!} ;
+    }
+  \end{tikzpicture}
+  \end{center}
+  }
+  \uncover<+->{
+  Atomic Global Memory Update:
+  \begin{center}
+  \begin{tikzpicture}[
+    start chain=going right,
+    node distance=1cm,
+    op/.style={draw,thick,fill=blue!50,on chain},
+    every join/.style={},
+    ]
+    \node [op] (read) {Read} ;
+    \node [op] (inc) {Increment} ;
+    \node [op] (write) {Write} ;
+    \draw [thick,->] (read) -- (inc) coordinate [pos=0.5] (r-i);
+    \draw [thick,->] (inc) -- (write) coordinate [pos=0.5] (i-w);
+    \begin{pgfonlayer}{background}
+      \node [fit=(read) (write), fill=blue!30,draw,thick] { } ;
+    \end{pgfonlayer}{background}
+    \uncover<+->{
+      \node at (r-i) [arrow box,fill=green!75,
+        arrow box arrows={north:0.5cm},below=0.3cm,draw,thick]
+        {Protected} ;
+    }
+    \uncover<+->{
+      \node at (i-w) [arrow box,fill=green!75,
+        arrow box arrows={north:0.5cm},below=0.3cm,draw,thick]
+        {Protected} ;
+    }
+  \end{tikzpicture}
+  \end{center}
+  }
+  \uncover<+->{
+    \textbf{How?}\\
+    atomic\_\{add,inc,cmpxchg,\dots\}(int *global, int value);
+  }
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}[fragile]{Atomic: Compare-and-swap}
+  \begin{lstlisting}
+  int atomic_cmpxchg (__global int *p, int cmp, int val)
+  int atomic_cmpxchg (__local int *p, int cmp, int val)
+  \end{lstlisting}
+
+  Does:
+  \begin{itemize}
+    \item Read the 32-bit value (referred to as
+    old) stored at location pointed by p.
+  \item Compute \texttt{(old == cmp) ? val : old}.
+  \item Store result at location pointed by p.
+  \item Returns old.
+  \end{itemize}
+  \uncover<2>{
+    \begin{tikzpicture} [overlay]
+      \node [above left=1cm of current page.south east, draw,drop shadow,fill=white,
+      inner xsep=0.5cm,inner ysep=0.5cm,thick]
+        {
+          Implement atomic \texttt{float} add?
+        } ;
+    \end{tikzpicture}
+  }
+\end{frame}
 % }}}
+% -----------------------------------------------------------------------------
 \questionframe{}
 \imagecreditslide
 
