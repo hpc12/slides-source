@@ -20,7 +20,9 @@
     \item HW1 grades sent
     \item HW2 graded soon
     \item HW3 due
-    \item HW4 out
+    \item HW4 out tomorrow
+    \item Cuda cluster accounts
+    \item Mailing list messages
   \end{itemize}
 \end{frame}
 % -----------------------------------------------------------------------------
@@ -126,7 +128,7 @@
             \texttt{\dots} =
             \texttt{CLK\_\{LOCAL,GLOBAL\}\_MEM\_FENCE}
           \item Inter-group:\\ Kernel launch
-          \item CPU-GPU:\\ Command queues, Events
+          \item CPU-GPU:\\ Command queues%, Events
         \end{itemize}
       }
     \column{0.35\textwidth}
@@ -462,16 +464,15 @@
     \item Change order (not always easy! Example?)
   \end{itemize}
   \pause
+  \bigskip
   Would like a middle ground: 
   \begin{quote}
   ``Just keep the buffer I've got right here!''
   \end{quote}
-  But when may I reuse that buffer?
+  But when is it safe to reuse that buffer?
 \end{frame}
 % -----------------------------------------------------------------------------
 \begin{frame}{Non-blocking}
-  \pause
-  \bigskip
   \textbf{MPI 3.0, Section 3.5:}
   \begin{quote}
     \upshape
@@ -484,9 +485,125 @@
     One can improve performance on many systems by overlapping
     communication and computation.
   \end{quote}
+  \uncover<+>{}
+  \uncover<+->{
+    \begin{tikzpicture} [overlay]
+      \node [above left=0.5cm of current page.south east, draw,drop shadow,fill=white,
+      inner xsep=0.5cm,inner ysep=0.5cm,thick,text width=0.6\textwidth]
+        {
+          Nonblocking can be \emph{combined} with
+          buffered/ready/synchronous.
+
+          $\rightarrow$ It's not a ``mode''.
+
+          \bigskip
+          Nonblocking sends can be matched with blocking receives, and
+          vice-versa. \textbf{[3.7]}
+        } ;
+    \end{tikzpicture}
+  }
 \end{frame}
 % -----------------------------------------------------------------------------
+\begin{frame}{MPI}
+  \begin{center}
+  \Huge Nonblocking demo time
+  \end{center}
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{Partitioning for neighbor communication}
+  \begin{center}
+    \includegraphics[height=7cm]{mesh-partition.png}
+  \end{center}
+  \uncover<+>{}
+  \uncover<+->{
+    \begin{tikzpicture} [overlay]
+      \node [above left=0.5cm of current page.south east, draw,drop shadow,fill=white,
+      inner xsep=0.5cm,inner ysep=0.5cm,thick]
+        {
+          How can I chop up a domain?
+        } ;
+    \end{tikzpicture}
+  }
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{MPI}
+  \begin{center}
+  \Huge Neighbor comm demo time
+  \end{center}
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{MPI: Ordering}
+  \uncover<+->{}
+  \textbf{MPI 3.0, Section 3.5:}
+  \begin{quote}
+    \upshape
+    \textbf{Order} Messages are \hilite<+->{non-overtaking}: If a
+    sender sends two messages in succession to the same destination,
+    and both match the same receive, then this operation cannot
+    receive the second message if the first one is still pending.
+
+    \bigskip
+    If a receiver posts two receives in succession,
+    and both match the same message, then the second receive operation
+    cannot be satisfied
+    by this message, if the first one is still pending.
+  \end{quote}
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{MPI: Progress}
+  \textbf{MPI 3.0, Section 3.5:}
+
+  \begin{quote}
+    \upshape
+    \textbf{Progress} If a pair of matching send and receives have
+    been initiated on two processes, then at least one of these two
+    operations will complete, independently of other actions in the
+    system:
+
+    \begin{itemize}
+      \item the send operation will complete, unless the receive is
+        satisfied by another message, and completes; 
+      \item the receive operation will complete, unless the
+        message sent is consumed by another matching receive that 
+        was posted at the same destination process.
+    \end{itemize}
+  \end{quote}
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}[fragile]{MPI: Progress Example}
+  \begin{lstlisting}
+    if (rank == 0)
+    {
+      MPI_Bsend(buf1, count, MPI_DOUBLE, 1, tag1, comm)
+      MPI_Ssend(buf2, count, MPI_DOUBLE, 1, tag2, comm)
+    }
+    else if (rank == 1) then
+    {
+      MPI_Recv(buf1, count, MPI_DOUBLE, 0, tag2, comm, status)
+      MPI_Recv(buf2, count, MPI_DOUBLE, 0, tag1, comm, status)
+    }
+  \end{lstlisting}
+\end{frame}
+
+
+
 % }}}
+
+
+% Non-overtaking, order
+% Progress
+
+% Using barriers to split 'any' recvs.
+
+% Collectives
+
+% Communicators
+
+% MPE, Jumpshot
+% -----------------------------------------------------------------------------
+
+
+
 \questionframe{}
 \imagecreditslide
 

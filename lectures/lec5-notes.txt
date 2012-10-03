@@ -143,10 +143,49 @@ mpi-2send:
 - Wrong mental model!
 - Correct? What is the *meaning* of what we wrote?
 
-< standard
+< send standard excerpts
 
 - Fix by reordering
 
 - n neighbor exchanges
   odd/even a solution
   what if odd number of ranks?
+-------------------------------------------------------------------------------
+mpi-nonblock:
+
+- I for "immediate"
+
+- MPI_Isend(buf, count, type, test, tag, comm, req)
+- MPI_Irecv(buf, count, type, source, tag, comm, req)
+- MPI_Wait(req, status)
+- MPI_Test(req, int* flag, status)
+
+- Write the periodic-n exchange to the right.
+  I need both send and receive non-blocking, right?
+-------------------------------------------------------------------------------
+< mesh partition pic
+- Common pattern: Neighbor communication.
+  - Post a bunch of receives
+  - Post a bunch of sends
+  - Do both as early on as possible
+  - If you've got other work to fall back to, test the receives
+  - If don't, wait on the receives
+  - Complete the sends at some later point
+
+mpi-neighbor:
+- time mpirun -H box,slate -n 500 ./mpi-nonblock-soln > /dev/null
+- time mpirun -H box,slate -n 500 ./mpi-neighbor > /dev/null
+-------------------------------------------------------------------------------
+mpi-periodic-send2:
+
+- Now what if everybody needs to send two bits of data?
+- run on 10 nodes, pipe to file
+- for i in $(seq 0 9); do echo $i; grep "dest-rank $i" a; done
+
+Potential crash/deadlock/confusion:
+- If msg1 and msg2 are of very different nature
+  (say, in different subroutines)
+  Possible fixes? (Barrier, targeted sends and receives--but can you be sure?)
+
+< Non-overtaking
+-------------------------------------------------------------------------------
