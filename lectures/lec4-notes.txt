@@ -1,0 +1,93 @@
+colorscheme evening
+-------------------------------------------------------------------------------
+Make demo
+-------------------------------------------------------------------------------
+Use lec4 demo
+
+- Move Makefile out of the way
+- Basic idea: target: dependency 
+- Show that it doesn't rebuild an up-to-date target
+- touch
+- screwed up? make clean
+- make all
+- Variables help centralize information
+
+"$@": target
+"$^": dep
+"$<": first target
+
+- Automatic .c -> .o rules?
+  - include files are dependencies!
+
+"$%": stem
+
+-------------------------------------------------------------------------------
+vec-add
+-------------------------------------------------------------------------------
+- run starter (on "Intel")
+- ./vec-add 10 000 000   10
+- that's too fast
+
+- ./show-clock-freq
+- ./set-governor performance
+- ./vec-add 10 000 000 10
+
+- check answer
+- also wrong!
+
+< queues slides
+
+- put in second clFinish
+
+- ./vec-add 10 000 000   1
+- ./vec-add 10 000 000   10
+- ./vec-add 10 000 000   100
+
+- put in first clFinish
+
+- do timings again
+- "kinda low"
+
+- htop
+- make multi-core version (256 granularity)
+  (with no check)
+- add < n check
+- htop
+- proper multi-core code
+
+- add transfer back & check
+- asynch transfer issue
+
+- switch to "NVIDIA"
+- using hardware well?
+- add work groups
+- woo hoo!
+
+- show 'free flops'
+
+- also show get_global_id()
+- what happens if global size not divisble by local size?
+
+- use 16x16 work group
+-------------------------------------------------------------------------------
+transpose
+-------------------------------------------------------------------------------
+- walk through
+- develop in-place transpose
+- kernel
+- note: need odd number of trips :)
+- run with 8192
+
+- dropped most of our mem bw
+- ideas how to recover?
+- contiguity of mem access?
+
+< device lang slides
+
+- modify to non-inplace
+- modify to blocky
+- modify to local w/no sync
+
+< sync slides
+
+- add sync

@@ -1,0 +1,494 @@
+\documentclass[english,compress]{beamer}
+\input{settings}
+
+\begin{document}
+% {{{ front matter
+
+\title{High-Performance Scientific Computing\\Lecture 5: More OpenCL, MPI}
+
+\date{MATH-GA 2011 / CSCI-GA 2945 $\cdot$ October 3, 2012}
+
+\frame{\titlepage}
+
+\begin{frame}{Today}
+  \tableofcontents[hideallsubsections]
+\end{frame}
+% }}}
+% -----------------------------------------------------------------------------
+\begin{frame}{Bits and pieces}
+  \begin{itemize}
+    \item HW1 grades sent
+    \item HW2 graded soon
+    \item HW3 due
+    \item HW4 out
+  \end{itemize}
+\end{frame}
+% -----------------------------------------------------------------------------
+\section{Tool of the day: Git}
+% -----------------------------------------------------------------------------
+\begin{frame}{Git}
+  \begin{center}
+  \Huge Demo time
+  \end{center}
+\end{frame}
+% -----------------------------------------------------------------------------
+\section{OpenCL: Device Language}
+% -----------------------------------------------------------------------------
+\begin{frame}{Moar OpenCL!}
+  \begin{center}
+  \Huge Demo time
+  \end{center}
+\end{frame}
+% -----------------------------------------------------------------------------
+% {{{
+\begin{frame}{OpenCL Device Language}
+  \begin{columns}
+    \column{0.7\textwidth}
+      OpenCL device language is C99, with these differences:
+
+      \medskip
+      \plusball Index getters
+
+      \plusball Memory space qualifiers
+
+      \plusball Vector data types 
+
+      \plusball Many generic (`overloaded') math functions
+
+      \plusball Synchronization
+
+      \minusball Recursion
+
+      \minusball Fine-grained \texttt{malloc()}
+
+      \minusball Function pointers
+    \column{0.3\textwidth}
+      \includegraphics[width=\textwidth]{opencl-logo.png}
+  \end{columns}
+\end{frame}
+
+%\input{cuda-cl-dictionary}
+
+\begin{frame}{Address Space Qualifiers}
+
+  \begin{center}
+  \begin{tabular}{p{5em}cccp{2.8cm}}
+    \hline
+    \textbf{Type} & \textbf{Per} & \textbf{``Speed''} \\
+    \hline
+    private*) & work item & super-fast\\
+    local & group & fast \\
+    global & grid & kinda slow \\
+    \hline
+  \end{tabular}
+
+  \bigskip
+  *) default, so optional
+  \end{center}
+  \uncover<2>{
+    \begin{tikzpicture} [overlay]
+      \node [
+        above left=1cm of current page.south east, draw,drop shadow,fill=white,
+        inner sep=5mm,thick, text width=0.6\textwidth]
+        {
+          Should really discuss ``speed'' in terms of
+          latency/bandwidth.
+
+          \bigskip
+          \emph{Both} decrease with distance from the point of
+          execution.
+        } ;
+    \end{tikzpicture}
+  }
+\end{frame}
+
+% }}}
+% -----------------------------------------------------------------------------
+\section{OpenCL: Synchronization}
+% -----------------------------------------------------------------------------
+% {{{
+\begin{nologo}
+\begin{frame}{Concurrency and Synchronization}
+  \uncover<+->{
+    \begin{beamercolorbox}[sep=3mm]{block body}
+      GPUs have layers of concurrency.\\
+      \hfill Each layer has its synchronization primitives.
+    \end{beamercolorbox}
+  }
+  \bigskip
+  \begin{columns}[c]
+    \column{0.6\textwidth}
+      \uncover<+->{
+        \begin{itemize}
+          \item Intra-group:\\ 
+            \texttt{barrier(\dots)}, \\
+            \texttt{mem\_fence(\dots)}\\
+            \texttt{\dots} =
+            \texttt{CLK\_\{LOCAL,GLOBAL\}\_MEM\_FENCE}
+          \item Inter-group:\\ Kernel launch
+          \item CPU-GPU:\\ Command queues, Events
+        \end{itemize}
+      }
+    \column{0.35\textwidth}
+      \includegraphics[width=\textwidth]{onion.jpeg}
+  \end{columns}
+
+\end{frame}
+\end{nologo}
+\addimgcredit{Onions: flickr.com/darwinbell \cc}
+
+\input{barrier}
+\input{memory-fence}
+
+% -----------------------------------------------------------------------------
+\begin{frame}{Synchronization between Groups}
+  \begin{block}<+->{Golden Rule:}
+    Results of the algorithm must be independent of the order in which
+    work groups are executed.
+  \end{block}
+
+  \uncover<+->{
+  \textbf{Consequences:}
+  \begin{itemize}
+    \item Work groups may read the same information from global memory.
+    \item But: Two work groups may not validly write different things to 
+      the same global memory.
+    \item Kernel launch serves as
+      \begin{itemize}
+        \item Global barrier
+        \item Global memory fence
+      \end{itemize}
+  \end{itemize}
+  }
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{Atomic Operations}
+  \uncover<+->{
+  Collaborative (inter-block) Global Memory Update:
+  \begin{center}
+  \begin{tikzpicture}[
+    start chain=going right,
+    node distance=1cm,
+    op/.style={draw,thick,fill=blue!50,on chain},
+    every join/.style={},
+    ]
+    \node [op] (read) {Read} ;
+    \node [op] (inc) {Increment} ;
+    \node [op] (write) {Write} ;
+    \draw [thick,->] (read) -- (inc) coordinate [pos=0.5] (r-i);
+    \draw [thick,->] (inc) -- (write) coordinate [pos=0.5] (i-w);
+    \uncover<+->{
+      \node at (r-i) [arrow box,fill=yellow,
+        arrow box arrows={north:0.5cm},below,draw,thick]
+        {Interruptible!} ;
+    }
+    \uncover<+->{
+      \node at (i-w) [arrow box,fill=yellow,
+        arrow box arrows={north:0.5cm},below,draw,thick]
+        {Interruptible!} ;
+    }
+  \end{tikzpicture}
+  \end{center}
+  }
+  \uncover<+->{
+  Atomic Global Memory Update:
+  \begin{center}
+  \begin{tikzpicture}[
+    start chain=going right,
+    node distance=1cm,
+    op/.style={draw,thick,fill=blue!50,on chain},
+    every join/.style={},
+    ]
+    \node [op] (read) {Read} ;
+    \node [op] (inc) {Increment} ;
+    \node [op] (write) {Write} ;
+    \draw [thick,->] (read) -- (inc) coordinate [pos=0.5] (r-i);
+    \draw [thick,->] (inc) -- (write) coordinate [pos=0.5] (i-w);
+    \begin{pgfonlayer}{background}
+      \node [fit=(read) (write), fill=blue!30,draw,thick] { } ;
+    \end{pgfonlayer}
+    \uncover<+->{
+      \node at (r-i) [arrow box,fill=green!75,
+        arrow box arrows={north:0.5cm},below=0.3cm,draw,thick]
+        {Protected} ;
+    }
+    \uncover<+->{
+      \node at (i-w) [arrow box,fill=green!75,
+        arrow box arrows={north:0.5cm},below=0.3cm,draw,thick]
+        {Protected} ;
+    }
+  \end{tikzpicture}
+  \end{center}
+  }
+  \uncover<+->{
+    \textbf{How?}\\
+    atomic\_\{add,inc,cmpxchg,\dots\}(int *global, int value);
+  }
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}[fragile]{Atomic: Compare-and-swap}
+  \begin{lstlisting}
+  int atomic_cmpxchg (__global int *p, int cmp, int val)
+  int atomic_cmpxchg (__local int *p, int cmp, int val)
+  \end{lstlisting}
+
+  Does:
+  \begin{itemize}
+    \item Read the 32-bit value (referred to as
+    old) stored at location pointed by p.
+  \item Compute \texttt{(old == cmp) ? val : old}.
+  \item Store result at location pointed by p.
+  \item Returns old.
+  \end{itemize}
+  \uncover<2>{
+    \begin{tikzpicture} [overlay]
+      \node [above left=1cm of current page.south east, draw,drop shadow,fill=white,
+      inner xsep=0.5cm,inner ysep=0.5cm,thick]
+        {
+          Implement atomic \texttt{float} add?
+        } ;
+    \end{tikzpicture}
+  }
+\end{frame}
+% }}}
+% -----------------------------------------------------------------------------
+\section{Intro to MPI}
+% -----------------------------------------------------------------------------
+% {{{
+\begin{frame}{MPI}
+  \textbf{M}essage \textbf{P}assing \textbf{I}nterface:
+  \begin{center}
+    \begin{tikzpicture}
+      \node (node1) {
+        \includegraphics[height=3cm]{server.jpeg}
+      } ;
+      \node [right=1cm of node1] (msg) {
+        \includegraphics[height=2cm]{envelope.jpeg}
+      } ;
+      \node [right=1cm of msg] (node2) {
+        \includegraphics[height=3cm]{server.jpeg}
+      } ;
+      \draw [dashed,thick,->] (node1) -- (msg) ;
+      \draw [dashed,thick,->] (msg) -- (node2) ;
+    \end{tikzpicture}
+  \end{center}
+\end{frame}
+\begin{frame}{MPI}
+  \foreach \i in {1,2,...,110}
+  {%
+    \ifthenelse{\equal{\i}{103}}{%
+      \uncover<1-3>{
+        \tikz \node (node\i) {\includegraphics[height=0.5cm]{server-small.jpeg}}; %
+      }
+    }{%
+      \tikz \node (node\i) {\includegraphics[height=0.5cm]{server-small.jpeg}}; %
+    }
+  }
+  \uncover<+>{}
+  \only<+->{
+  \foreach \i in {1,6,...,110}
+  {
+    \foreach \j in {3,23,...,110}
+    {
+      \tikz [overlay] \draw [thick,->] (node\i) -- (node\j) ;
+    }
+  }
+  }
+
+  \uncover<+->{
+    \begin{tikzpicture} [overlay]
+      \node [below right=1cm of current page.north west, draw,drop shadow,fill=white,
+      inner xsep=0.5cm,inner ysep=0.5cm,thick]
+        {
+          Not enough throughput? Just buy more computers$^{*}$
+        } ;
+    \end{tikzpicture}
+  }
+  \uncover<+>{}
+  \uncover<+->{
+    \begin{tikzpicture} [overlay]
+      \node [above left=0.5cm of current page.south east, draw,drop shadow,fill=white,
+      inner xsep=0.5cm,inner ysep=0.5cm,thick,text width=0.6\textwidth]
+        {
+          Key questions:
+          \begin{itemize}
+            \item Who can I send mail to?
+            \item How much mail can go through the system (bandwidth)?
+            \item How fast does mail arrive (latency)?
+            \item Should I wait for the return receipt?
+            \only<+>{\item \textbf{Why haven't I heard from the other guys
+            yet?}}
+          \end{itemize}
+        } ;
+    \end{tikzpicture}
+  }
+\end{frame}
+\addimgcredit{Server: sxc.hu/Kolobsek}
+\addimgcredit{Envelope: sxc.hu/ilco}
+% -----------------------------------------------------------------------------
+\begin{frame}{MPI}
+  \begin{columns}
+    \column{0.5\textwidth}
+      \begin{center}
+      \textbf{MPI 3.0}
+
+      \medskip
+      Born September 21, 2012
+
+      \vspace{2cm}
+      \footnotesize
+      MPI 1.0: June 1994
+      \end{center}
+    \column{0.5\textwidth}
+      \includegraphics[width=\textwidth]{gift-box.png}
+  \end{columns}
+\end{frame}
+\addimgcredit{Gift box: sxc.hu/iprole}
+% -----------------------------------------------------------------------------
+\begin{frame}{MPI}
+  \begin{center}
+  \Huge Demo time
+  \end{center}
+\end{frame}
+% -----------------------------------------------------------------------------
+\def\hilite<#1>#2{\alt<#1>{\colorbox{blue!30}{#2}}{\colorbox{white}{#2}}}
+\begin{frame}{Send definition}
+  \textbf{MPI 3.0, Section 3.4:}
+
+  \uncover<+>{}
+  \begin{quote}
+    \upshape
+    [\texttt{MPI\_Send}] is \hilite<+->{blocking}: it does not
+    return until the message data and envelope have been safely stored
+    away so that the sender is \hilite<+->{free to modify the send buffer}.
+  \end{quote}
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{Send definition}
+  \textbf{MPI 3.0, Section 3.4, more:}
+
+  \uncover<+>{}
+  \medskip
+  \begin{quote}
+    \upshape
+    [\texttt{MPI\_Send}] uses the
+    \hilite<+->{standard
+    \tikz \coordinate (cmode) ;
+    communication mode}. In this mode, it is up to
+    MPI to decide whether outgoing messages will be buffered.
+
+    \medskip
+    MPI
+    \tikz \coordinate (may) ;
+    \hilite<+->{may} buffer outgoing messages.
+    In such a case, the send call may complete before a matching
+    receive is invoked. On the other hand, MPI may choose not to
+    buffer outgoing messages.
+  \end{quote}
+  \uncover<+->{
+    \begin{tikzpicture} [overlay]
+      \node [
+        above right=1cm of current page.south west, draw,drop shadow,fill=white,
+        inner sep=5mm,thick, text width=0.3\textwidth] (may-descr)
+        {
+          What is correct behavior?
+
+          \medskip
+          Must, should, may (RFC 2119)
+        } ;
+        \draw [ultra thick,->] (may-descr) -- ($(may)+(2ex,0)$) ;
+    \end{tikzpicture}
+  }
+  \uncover<+->{
+    \begin{tikzpicture} [overlay]
+      \node [
+        above left=5mm of current page.south east, draw,drop shadow,fill=white,
+        inner sep=5mm,thick, text width=0.4\textwidth] (cmode-descr)
+        {
+          Alternative communication modes:
+          \begin{itemize}
+            \item Buffered
+            \item Synchronous
+            \item Ready
+          \end{itemize}
+        } ;
+        \draw [ultra thick,->] (cmode-descr) -- (cmode) ;
+    \end{tikzpicture}
+  }
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{Send definition}
+  \textbf{MPI 3.0, Section 3.4, yet more:}
+
+  \uncover<+>{}
+  \begin{quote}
+    \upshape
+    A send in standard mode can be \hilite<+->{started} whether or not a matching
+    receive has been \hilite<+->{posted}. 
+
+    \medskip
+    It may \hilite<+->{complete} before a
+    \hilite<+->{matching} receive is posted.
+
+    \medskip
+    The standard mode send is \hilite<+->{non-local}: successful
+    completion of the send operation may depend on the occurrence of a
+    matching receive.
+  \end{quote}
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{Meta-lesson}
+  \begin{center}
+    \Large
+    Can learn a lot from \emph{how} something is said.
+  \end{center}
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{Lessons}
+  \begin{itemize}
+    \item Blocking $\leftrightarrow$ buffers
+    \item Communication modes
+    \item Operation life cycle
+    \item Matching
+    \item Non-locality
+  \end{itemize}
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{Removing the deadlock}
+  Two ways laid out:
+  \pause
+  \begin{itemize}
+    \item Use buffered send (brittle!)
+    \item Change order (not always easy! Example?)
+  \end{itemize}
+  \pause
+  Would like a middle ground: 
+  \begin{quote}
+  ``Just keep the buffer I've got right here!''
+  \end{quote}
+  But when may I reuse that buffer?
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{Non-blocking}
+  \pause
+  \bigskip
+  \textbf{MPI 3.0, Section 3.5:}
+  \begin{quote}
+    \upshape
+    Nonblocking message-passing operations [...] can be used to avoid
+    the need for buffering outgoing messages.
+  \end{quote}
+  Additional Advantage: \textbf{[Sec. 3.7]}
+  \begin{quote}
+    \upshape
+    One can improve performance on many systems by overlapping
+    communication and computation.
+  \end{quote}
+\end{frame}
+% -----------------------------------------------------------------------------
+% }}}
+\questionframe{}
+\imagecreditslide
+
+\end{document}
+% vim: foldmethod=marker
