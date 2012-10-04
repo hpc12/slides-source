@@ -1,0 +1,321 @@
+\documentclass[english,compress]{beamer}
+\input{settings}
+
+\begin{document}
+% {{{ front matter
+
+\title{High-Performance Scientific Computing\\Lecture 6: MPI}
+
+\date{MATH-GA 2011 / CSCI-GA 2945 $\cdot$ October 10, 2012}
+
+\frame{\titlepage}
+
+\begin{frame}{Today}
+  \tableofcontents[hideallsubsections]
+\end{frame}
+% }}}
+% -----------------------------------------------------------------------------
+\begin{frame}{Bits and pieces}
+  \begin{itemize}
+    \item 
+  \end{itemize}
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}[fragile]{Atomic: Compare-and-swap}
+  \begin{lstlisting}
+  int atomic_cmpxchg (__global int *p, int cmp, int val)
+  int atomic_cmpxchg (__local int *p, int cmp, int val)
+  \end{lstlisting}
+
+  Does:
+  \begin{itemize}
+    \item Read the 32-bit value (referred to as
+    old) stored at location pointed by p.
+  \item Compute \texttt{(old == cmp) ? val : old}.
+  \item Store result at location pointed by p.
+  \item Returns old.
+  \end{itemize}
+  \uncover<2>{
+    \begin{tikzpicture} [overlay]
+      \node [above left=1cm of current page.south east, draw,drop shadow,fill=white,
+      inner xsep=0.5cm,inner ysep=0.5cm,thick]
+        {
+          Implement atomic \texttt{float} add?
+        } ;
+    \end{tikzpicture}
+  }
+\end{frame}
+% -----------------------------------------------------------------------------
+\section{Tool of the day: gdb}
+% -----------------------------------------------------------------------------
+\begin{frame}{Git}
+  \begin{center}
+  \Huge Demo time
+  \end{center}
+\end{frame}
+% -----------------------------------------------------------------------------
+\section{MPI}
+% -----------------------------------------------------------------------------
+% {{{
+% -----------------------------------------------------------------------------
+\begin{frame}{MPI}
+  \begin{center}
+  \Huge Demo time
+  \end{center}
+\end{frame}
+% -----------------------------------------------------------------------------
+\def\hilite<#1>#2{\alt<#1>{\colorbox{blue!30}{#2}}{\colorbox{white}{#2}}%
+}
+\begin{frame}{Send definition}
+  \textbf{MPI 3.0, Section 3.4:}
+
+  \uncover<+>{}
+  \begin{quote}
+    \upshape
+    [\texttt{MPI\_Send}] is \hilite<+->{blocking}: it does not
+    return until the message data and envelope have been safely stored
+    away so that the sender is \hilite<+->{free to modify the send buffer}.
+  \end{quote}
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{Send definition}
+  \textbf{MPI 3.0, Section 3.4, more:}
+
+  \uncover<+>{}
+  \medskip
+  \begin{quote}
+    \upshape
+    [\texttt{MPI\_Send}] uses the
+    \hilite<+->{standard
+    \tikz \coordinate (cmode) ;
+    communication mode}. In this mode, it is up to
+    MPI to decide whether outgoing messages will be buffered.
+
+    \medskip
+    MPI
+    \tikz \coordinate (may) ;
+    \hilite<+->{may} buffer outgoing messages.
+    In such a case, the send call may complete before a matching
+    receive is invoked. On the other hand, MPI may choose not to
+    buffer outgoing messages.
+  \end{quote}
+  \uncover<+->{
+    \begin{tikzpicture} [overlay]
+      \node [
+        above right=1cm of current page.south west, draw,drop shadow,fill=white,
+        inner sep=5mm,thick, text width=0.3\textwidth] (may-descr)
+        {
+          What is correct behavior?
+
+          \medskip
+          Must, should, may (RFC 2119)
+        } ;
+        \draw [ultra thick,->] (may-descr) -- ($(may)+(2ex,0)$) ;
+    \end{tikzpicture}
+  }
+  \uncover<+->{
+    \begin{tikzpicture} [overlay]
+      \node [
+        above left=5mm of current page.south east, draw,drop shadow,fill=white,
+        inner sep=5mm,thick, text width=0.4\textwidth] (cmode-descr)
+        {
+          Alternative communication modes:
+          \begin{itemize}
+            \item Buffered
+            \item Synchronous
+            \item Ready
+          \end{itemize}
+        } ;
+        \draw [ultra thick,->] (cmode-descr) -- (cmode) ;
+    \end{tikzpicture}
+  }
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{Send definition}
+  \textbf{MPI 3.0, Section 3.4, yet more:}
+
+  \uncover<+>{}
+  \begin{quote}
+    \upshape
+    A send in standard mode can be \hilite<+->{started} whether or not a matching
+    receive has been \hilite<+->{posted}. 
+
+    \medskip
+    It may \hilite<+->{complete} before a
+    \hilite<+->{matching} receive is posted.
+
+    \medskip
+    The standard mode send is \hilite<+->{non-local}: successful
+    completion of the send operation may depend on the occurrence of a
+    matching receive.
+  \end{quote}
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{Meta-lesson}
+  \begin{center}
+    \Large
+    Can learn a lot from \emph{how} something is said.
+  \end{center}
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{Lessons}
+  \begin{itemize}
+    \item Blocking $\leftrightarrow$ buffers
+    \item Communication modes
+    \item Operation life cycle
+    \item Matching
+    \item Non-locality
+  \end{itemize}
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{Removing the deadlock}
+  Two ways laid out:
+  \pause
+  \begin{itemize}
+    \item Use buffered send (brittle!)
+    \item Change order (not always easy! Example?)
+  \end{itemize}
+  \pause
+  \bigskip
+  Would like a middle ground: 
+  \begin{quote}
+  ``Just keep the buffer I've got right here!''
+  \end{quote}
+  But when is it safe to reuse that buffer?
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{Non-blocking}
+  \textbf{MPI 3.0, Section 3.5:}
+  \begin{quote}
+    \upshape
+    Nonblocking message-passing operations [...] can be used to avoid
+    the need for buffering outgoing messages.
+  \end{quote}
+  Additional Advantage: \textbf{[Sec. 3.7]}
+  \begin{quote}
+    \upshape
+    One can improve performance on many systems by overlapping
+    communication and computation.
+  \end{quote}
+  \uncover<+>{}
+  \uncover<+->{
+    \begin{tikzpicture} [overlay]
+      \node [above left=0.5cm of current page.south east, draw,drop shadow,fill=white,
+      inner xsep=0.5cm,inner ysep=0.5cm,thick,text width=0.6\textwidth]
+        {
+          Nonblocking can be \emph{combined} with
+          buffered/ready/synchronous.
+
+          $\rightarrow$ It's not a ``mode''.
+
+          \bigskip
+          Nonblocking sends can be matched with blocking receives, and
+          vice-versa. \textbf{[3.7]}
+        } ;
+    \end{tikzpicture}
+  }
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{MPI}
+  \begin{center}
+  \Huge Nonblocking demo time
+  \end{center}
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{Partitioning for neighbor communication}
+  \begin{center}
+    \includegraphics[height=7cm]{mesh-partition.png}
+  \end{center}
+  \uncover<+>{}
+  \uncover<+->{
+    \begin{tikzpicture} [overlay]
+      \node [above left=0.5cm of current page.south east, draw,drop shadow,fill=white,
+      inner xsep=0.5cm,inner ysep=0.5cm,thick]
+        {
+          How can I chop up a domain?
+        } ;
+    \end{tikzpicture}
+  }
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{MPI}
+  \begin{center}
+  \Huge Neighbor comm demo time
+  \end{center}
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{MPI: Ordering}
+  \uncover<+->{}
+  \textbf{MPI 3.0, Section 3.5:}
+  \begin{quote}
+    \upshape
+    \textbf{Order} Messages are \hilite<+->{non-overtaking}: If a
+    sender sends two messages in succession to the same destination,
+    and both match the same receive, then this operation cannot
+    receive the second message if the first one is still pending.
+
+    \bigskip
+    If a receiver posts two receives in succession,
+    and both match the same message, then the second receive operation
+    cannot be satisfied
+    by this message, if the first one is still pending.
+  \end{quote}
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{MPI: Progress}
+  \textbf{MPI 3.0, Section 3.5:}
+
+  \begin{quote}
+    \upshape
+    \textbf{Progress} If a pair of matching send and receives have
+    been initiated on two processes, then at least one of these two
+    operations will complete, independently of other actions in the
+    system:
+
+    \begin{itemize}
+      \item the send operation will complete, unless the receive is
+        satisfied by another message, and completes; 
+      \item the receive operation will complete, unless the
+        message sent is consumed by another matching receive that 
+        was posted at the same destination process.
+    \end{itemize}
+  \end{quote}
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}[fragile]{MPI: Progress Example}
+  \begin{lstlisting}
+    if (rank == 0)
+    {
+      MPI_Bsend(buf1, count, MPI_DOUBLE, 1, tag1, comm)
+      MPI_Ssend(buf2, count, MPI_DOUBLE, 1, tag2, comm)
+    }
+    else if (rank == 1) then
+    {
+      MPI_Recv(buf1, count, MPI_DOUBLE, 0, tag2, comm, status)
+      MPI_Recv(buf2, count, MPI_DOUBLE, 0, tag1, comm, status)
+    }
+  \end{lstlisting}
+\end{frame}
+% }}}
+
+
+% Non-overtaking, order
+% Progress
+
+% Using barriers to split 'any' recvs.
+
+% Collectives
+
+% Communicators
+
+% MPE, Jumpshot
+% -----------------------------------------------------------------------------
+
+
+
+\questionframe{}
+%\imagecreditslide
+
+\end{document}
+% vim: foldmethod=marker
+
