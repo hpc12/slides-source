@@ -1,6 +1,107 @@
 -------------------------------------------------------------------------------
+gdb demo
+-------------------------------------------------------------------------------
+BUGS:
+  *root = NULL
+  root->{left,right} = root
+  walk_tree doesn't check
+-------------------------------------------------------------------------------
+- broken 10 -> seg fault
+- gdb broken 10 -> abort with parameter complaint
+- --args
+- r
+- Q: what's going on?
+- up
+- bt
+- still not helpful
+
+- DEBUG_FLAGS=-g make broken
+  (Point out: -On negate -g!)
+  (Point out: DEBUG_FLAGS is relative to my Makefile!)
+
+- bt
+- seg fault because of stack overflow
+  fix?
+- Fix root->{left,right} = root
+- Recompile
+
+- Now suppose I didn't run my program in gdb, or I can't
+  (running at a user site, under MPI...)
+- ulimit -a
+- ulimit -c unlimited ("core dump")
+- Rerun, notice ("core dumped")
+  show core file
+  terminology
+
+  p root
+  p *root
+  up
+  p root
+  p *root
+  Fix missing check in walk
+
+  Break on function
+  b main
+  b broken.c:67
+  b walk_tree if root == 0
+  n,n,n,p
+  wouldn't it be nice if I could see a bit more?
+
+- gdb -tui --args b
+  point out breakpoint mark
+  discuss cursor control
+
+  'n' around a bit
+  notice that we jump over 'add_to_tree'
+  's'
+  'bt'
+  'fin'
+  's'
+  check *root
+  semantics: next line to be executed!
+  something assigned to *root!
+  fix the assignment to *root
+
+WITH OPENMP:
+
+- insert OMP directive
+  run
+  wait for "new thread"
+  Ctrl-C
+  info threads
+  thread i
+  up/down
+
+WITH MPI:
+  modify hello-mpi.c
+  read mpi-snippet.c
+  DEBUG_FLAGS=-g make
+
+  mpiexec -n 2 mpi-hello
+
+  open another shell
+  gdb --tui mpi-hello PID
+  ASK: fin up to main program
+  set var i = 7
+
+WITH OPENCL:
+  Fire up VM. (32-bit only, bugs)
+  git clone ....
+  Add -g -O0 to build options
+  show kernel
+  point out printf();
+
+  export CPU_MAX_COMPUTE_UNITS=1
+  b __OpenCL_sum_kernel
+
+  point out execution order
+
+-------------------------------------------------------------------------------
+mpi demo cont'd
+-------------------------------------------------------------------------------
 mpi-send:
 
+- evolve mpi-hello
 - MPI_Send(buf, count, type, dest, tag, comm);
 - MPI_Recv(buf, count, type, dest, tag, comm, status);
   MPI_ANY_SOURCE
@@ -16,10 +117,12 @@ mpi-send:
 - First transmit entire buffer.
 
 - run just plain (-> error)
+  why no error handling?
+  MPI_Comm_set_errhandler(MPI_COMM_WORLD, MPI_ERRORS_ARE_FATAL);
 
 - run full
 
-- What about variable-size data? (later!)
+- What about variable-size data?
 - MPI_Get_count(status, type, &count)
 
 - What about truly variable-size data? (MPI_Probe)
@@ -28,6 +131,7 @@ mpi-send:
 -------------------------------------------------------------------------------
 mpi-2send:
 
+- Evolve mpi-send
 - Write send-then-receive with 1024 buf
 - Increase to 16384
 - Add printf.
@@ -52,6 +156,7 @@ mpi-nonblock:
 - MPI_Wait(req, status)
 - MPI_Test(req, int* flag, status)
 
+- Evolve mpi-2send.c
 - Write the periodic-n exchange to the right.
   I need both send and receive non-blocking, right?
 -------------------------------------------------------------------------------
@@ -61,15 +166,17 @@ mpi-nonblock:
   - Post a bunch of sends
   - Do both as early on as possible
   - If you've got other work to fall back to, test the receives
-  - If don't, wait on the receives
+  - If you don't, wait on the receives
   - Complete the sends at some later point
 
 mpi-neighbor:
+- Here's how to do this badly: show mpi-neighbor (predictions?)
 - time mpirun -H box,slate -n 500 ./mpi-nonblock-soln > /dev/null
 - time mpirun -H box,slate -n 500 ./mpi-neighbor > /dev/null
 -------------------------------------------------------------------------------
 mpi-periodic-send2:
 
+- evolve mpi-nonblock
 - Now what if everybody needs to send two bits of data?
 - run on 10 nodes, pipe to file
 - for i in $(seq 0 9); do echo $i; grep "dest-rank $i" a; done
@@ -80,5 +187,51 @@ Potential crash/deadlock/confusion:
   Possible fixes? (Barrier, targeted sends and receives--but can you be sure?)
 
 < Non-overtaking
--------------------------------------------------------------------------------
 
+- Try barriers as a fix.
+- Try targeted sends and receives.
+-------------------------------------------------------------------------------
+a glimpse at performance:
+
+- two key figures? latency/bw
+
+BANDWIDTH:
+- bandwidth? walk through benchmark, noting benchmarking tricks:
+  "loop": run how often
+  "skip": skip the warm-up
+  "window-size": keep how many non-blocking requests in flight
+
+- run just on box
+  as good as 'memcpy'
+  very near memory bandwidth! How many extra buffer copies can there be?
+  -> point of all this buffer nonsense
+
+  Implementation matters:
+  Previous example uses shared memory between processes
+  mpiexec --mca btl self,tcp -n 2
+  You see the extra buffer copies!
+
+  Now -H box,slate
+  -> Networks slow
+  -> cardiac,bowery use faster interconnect, I'd encourage you to try this code
+     there and compare with our results
+
+BI-BANDWIDTH:
+  quick walkthrough
+  full-duplex or aggregate bandwidth?
+
+LATENCY:
+  quick walkthrough
+  on-host
+  on-host tcp
+  off-host
+-------------------------------------------------------------------------------
+< spam (collectives)
+-------------------------------------------------------------------------------
+MPE Demo:
+
+- make mpe-periodic-send2-soln
+- note how to compile
+- run jumpshot on log file
+- click through conversion
+- point out legend window
