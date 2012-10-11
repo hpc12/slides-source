@@ -26,23 +26,131 @@
 
 
 \bigskip
-\akteachprobhead{Problem 1: MPI Bugs!}
+\akteachprobhead{Problem 1: Pitch a project}
 
-Uncle Blaise has written seven more parallel programs, this time with
-MPI. Unfortunately, they're once again all wrong. Please fix them for
-him.
+Please form an initial idea of what final project you would like to
+do. The scope should at least amount to about four homework sets in
+terms of overall work, and you'll need to be able to present your
+progress in a 20-minute talk towards the end of the class. The project
+has to involve some non-trivial form of parallel programming. Note
+that you don't need to have the idea fully developed right now. This
+pitch is about me helping you to figure out whether your proposed
+project is suitable. At this stage, ``no'' is an acceptable answer to
+that question, and if that happens, we'll figure out a plan together.
 
-In the repository at \url{https://github.com/hpc12/hw5-problem1},
-you'll find six OpenMP programs, each of which has one or more bugs.
-Please fix the programs so that they do the following things:
+If you'd like to work in a team, please also find your teammates now,
+and pitch a project together.
 
-\begin{description}
-\item[Yo] Dude
-\end{description}
+\begin{enumerate}[a)]
+  \item Please make an appointment with me for the week of
+    October 15--October 19. During this appointment (which will last
+    for about 10 minutes), I'll ask you to present, within three to
+    five minutes, what your project is about, and what makes it
+    interesting as a computational problem. You should also be
+    prepared to answer the following questions:
+    \begin{itemize}
+      \item What type of parallelization do you intend to apply? Why
+        do you think that type would be a good fit?
+      \item What software exists for this problem? What existing
+        components do you intend to use?
+    \end{itemize}
+    I'll provide feedback, and we'll be on our way to narrowing down
+    what your project will be.
+\end{enumerate}
 
-Note that, once again, these are well-known programs, and it's
-super-simple to find solutions for them on the web. We're aware of
-that. To state the obvious, you'll get more out of this problem if you
-try to do them on your own.
+\bigskip
+\akteachprobhead{Problem 2: Simulate fish in a long tank}
+
+In this problem, you'll be using MPI to model a large school of fish that are
+swimming around a two-dimensional tank. If $N$ is the number of ranks
+in your simulation, then the dimension of the tank is $50N \times 50$.
+Each rank simulates fish a portion of the tank, rank $i$ manages the
+portion $[50i,50(i+1))\times [0,50)$, i.e. from $x$-coordinate $50i$ up to
+(but not including) $x$-coordinate $50(i+1)$.
+
+\begin{enumerate}[a)]
+  \item Create a structure representing a fish. A fish has
+    \begin{itemize}
+      \item A position $(x,y)$, represented as two double-precision
+        numbers.
+      \item A velocity $(vx,vy)$, represented as two double-precision
+        numbers.
+    \end{itemize}
+    The simulation proceeds in time steps. A fish moves from $(x,y)$
+    to $(x+vx, y+vy)$ every time step.
+
+    The upper and lower walls of the tank are solid. If a fish would
+    hit or penetrate a wall in a time step, it stays where it is and
+    changes the sign of its vertical direction instead.
+
+    Examine the first command line argument (call it $m$) and have
+    each rank place $m$ fish randomly and uniformly in its part of the
+    tank. Pick the each of the velocities uniformly in the interval
+    $[-2,2]$.
+
+  \item Write a time stepping procedure. Note that the tank is
+    periodic in the horizontal direction. I.e. if a fish swims out of
+    the left boundary of the tank area managed by rank $0$, it
+    reappears on the right-hand side of the tank of rank $N-1$.
+
+    You may want to use non-blocking communication to avoid deadlocks
+    and communication ordering issues. Your code has to work for any
+    number of ranks.
+
+    You'll also have to deal with the fact that a variable number of
+    fish may wander from one sub-tank to the next in a time step.
+    You may use fixed-size buffers for this. If you do, your code
+    \emph{must} notice that it's overrunning a buffer, drop the fish
+    that don't fit into the send buffer from the simulation, and print
+    a comment to the console about this fact.
+
+    If you like, you may investigate the use one of two possible
+    solutions to this issue:
+    \begin{itemize}
+      \item \texttt{MPI\_Probe} can get the size of a message without
+        actually receiving it.
+      \item You can send a message containing the number of fish to be
+        sent \emph{before} actually sending the fish data.
+    \end{itemize}
+    To send the fish, you may either send a `bag of bytes' or use
+    MPI's facilities for structured data types.
+
+  \item Add code so that each rank outputs the current state of its
+    fish to a 50x50 pixel PPM image file with a name as output by
+    \begin{lstlisting}
+      sprintf(ppm_file_name, "fish-step%04d-rank-%04d.ppm", step, rank);
+    \end{lstlisting}
+    Fill the image with a black background and draw a white pixel for
+    every fish, where the extent of your rank's part of the tank is
+    mapped to the 50x50 pixel image.
+
+    You may then use the following command to glue these images
+    together horizontally:
+    \begin{lstlisting}
+      for step in $( seq -f "%04g" 0 100) ; do
+        montage fish-step$step-rank*.ppm -mode Concatenate fish-step$step.png
+      done
+    \end{lstlisting}%stopzone
+    You may have to change the number 100 to the actual number of time
+    steps.
+
+    Then delete all the PPMs and view the \texttt{.png} files using
+    the \texttt{ristretto} image viewer on your VM. This allows you to
+    step forward through the images in the style of a flip book.
+
+    Use the second command line argument to determine when to output
+    these image files. If that argument (call it $n$) is zero, do not
+    output anything.  If it is nonzero, output the images every $n$
+    steps.
+
+    Activate this drawing code if the second command line argument is
+    a \texttt{1}.
+
+  \item Use the third command line argument to determine how many time
+    steps to simulate. Insert barriers around your code, and have 
+    rank 0 output a simulation timing at the end, in units of `fish
+    updates per second', where this counts the total number of fish.
+\end{enumerate}
+Turn in your code as \texttt{fish.c} along with a \texttt{Makefile}.
 
 \end{document}
