@@ -1,0 +1,72 @@
+-------------------------------------------------------------------------------
+valgrind demo
+-------------------------------------------------------------------------------
+...
+-------------------------------------------------------------------------------
+mpi demo cont'd
+-------------------------------------------------------------------------------
+mpi-periodic-send2:
+
+- evolve mpi-nonblock
+- Now what if everybody needs to send two bits of data?
+- run on 10 nodes, pipe to file
+- for i in $(seq 0 9); do echo $i; grep "dest-rank $i" a; done
+
+Potential crash/deadlock/confusion:
+- If msg1 and msg2 are of very different nature
+  (say, in different subroutines)
+  Possible fixes? (Barrier, targeted sends and receives--but can you be sure?)
+
+< Non-overtaking
+
+- Try barriers as a fix.
+- Try targeted sends and receives.
+-------------------------------------------------------------------------------
+a glimpse at performance:
+
+- two key figures? latency/bw
+
+BANDWIDTH:
+- bandwidth? walk through benchmark, noting benchmarking tricks:
+  "loop": run how often
+  "skip": skip the warm-up
+  "window-size": keep how many non-blocking requests in flight
+
+- run just on box
+  as good as 'memcpy'
+  very near memory bandwidth! How many extra buffer copies can there be?
+  -> point of all this buffer nonsense
+
+  Implementation matters:
+  Previous example uses shared memory between processes
+  mpiexec --mca btl self,tcp -n 2
+  You see the extra buffer copies!
+
+  Now -H box,slate
+  -> Networks slow
+  -> cardiac,bowery use faster interconnect, I'd encourage you to try this code
+     there and compare with our results
+
+BI-BANDWIDTH:
+  quick walkthrough
+  full-duplex or aggregate bandwidth?
+
+LATENCY:
+  quick walkthrough
+  on-host
+  on-host tcp
+  off-host
+-------------------------------------------------------------------------------
+< spam (collectives)
+
+- evolve mpi-hello
+  MPI_Bcast(buffer, count, type, root, comm)
+
+-------------------------------------------------------------------------------
+MPE Demo:
+
+- make mpe-periodic-send2-soln
+- note how to compile
+- run jumpshot on log file
+- click through conversion
+- point out legend window
