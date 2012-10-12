@@ -31,7 +31,7 @@
 Please form an initial idea of what final project you would like to
 do. The scope should at least amount to about four homework sets in
 terms of overall work, and you'll need to be able to present your
-progress in a 20-minute talk towards the end of the class. The project
+progress in a 15-minute talk towards the end of the class. The project
 has to involve some non-trivial form of parallel programming. Note
 that you don't need to have the idea fully developed right now. This
 pitch is about me helping you to figure out whether your proposed
@@ -64,7 +64,7 @@ and pitch a project together.
 In this problem, you'll be using MPI to model a large school of fish that are
 swimming around a two-dimensional tank. If $N$ is the number of ranks
 in your simulation, then the dimension of the tank is $50N \times 50$.
-Each rank simulates fish a portion of the tank, rank $i$ manages the
+Each rank simulates fish in a portion of the tank. Rank $i$ manages the
 portion $[50i,50(i+1))\times [0,50)$, i.e. from $x$-coordinate $50i$ up to
 (but not including) $x$-coordinate $50(i+1)$.
 
@@ -93,6 +93,12 @@ portion $[50i,50(i+1))\times [0,50)$, i.e. from $x$-coordinate $50i$ up to
     the left boundary of the tank area managed by rank $0$, it
     reappears on the right-hand side of the tank of rank $N-1$.
 
+    Use MPI to realize the inter-rank communication necessary to
+    ensure that fish keep swimming as if nothing had happened if they
+    encounter the boundary between areas of the tank that are managed
+    by different ranks. The presence of the computational boundaries
+    should not affect the simulation at all.
+
     You may want to use non-blocking communication to avoid deadlocks
     and communication ordering issues. Your code has to work for any
     number of ranks.
@@ -100,7 +106,7 @@ portion $[50i,50(i+1))\times [0,50)$, i.e. from $x$-coordinate $50i$ up to
     You'll also have to deal with the fact that a variable number of
     fish may wander from one sub-tank to the next in a time step.
     You may use fixed-size buffers for this. If you do, your code
-    \emph{must} notice that it's overrunning a buffer, drop the fish
+    \emph{must} notice if it's overrunning a buffer, drop the fish
     that don't fit into the send buffer from the simulation, and print
     a comment to the console about this fact.
 
