@@ -73,11 +73,11 @@ portion $[50i,50(i+1))\times [0,50)$, i.e. from $x$-coordinate $50i$ up to
     \begin{itemize}
       \item A position $(x,y)$, represented as two double-precision
         numbers.
-      \item A velocity $(vx,vy)$, represented as two double-precision
+      \item A velocity $(v_x,v_y)$, represented as two double-precision
         numbers.
     \end{itemize}
     The simulation proceeds in time steps. A fish moves from $(x,y)$
-    to $(x+vx, y+vy)$ every time step.
+    to $(x+v_x, y+v_y)$ every time step.
 
     The upper and lower walls of the tank are solid. If a fish would
     hit or penetrate a wall in a time step, it stays where it is and
@@ -85,7 +85,7 @@ portion $[50i,50(i+1))\times [0,50)$, i.e. from $x$-coordinate $50i$ up to
 
     Examine the first command line argument (call it $m$) and have
     each rank place $m$ fish randomly and uniformly in its part of the
-    tank. Pick the each of the velocities uniformly in the interval
+    tank. Pick each of the velocities uniformly in the interval
     $[-2,2]$.
 
   \item Write a time stepping procedure. Note that the tank is
@@ -148,9 +148,6 @@ portion $[50i,50(i+1))\times [0,50)$, i.e. from $x$-coordinate $50i$ up to
     these image files. If that argument (call it $n$) is zero, do not
     output anything.  If it is nonzero, output the images every $n$
     steps.
-
-    Activate this drawing code if the second command line argument is
-    a \texttt{1}.
 
   \item Use the third command line argument to determine how many time
     steps to simulate. Insert barriers around your code, and have 
