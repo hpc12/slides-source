@@ -70,3 +70,20 @@ MPE Demo:
 - run jumpshot on log file
 - click through conversion
 - point out legend window
+-------------------------------------------------------------------------------
+Disassembly demo:
+
+- gcc -c loop-assembly.c
+- objdump --disassemble loop-assembly.o
+- gcc -c -O3 loop-assembly.c
+- repeat
+-------------------------------------------------------------------------------
+CPUID Demo:
+
+- build CPUID
+- calculate cache sizes
+-------------------------------------------------------------------------------
+Branch predictor demo:
+
+- set-governor performance
+- set-governor performance
