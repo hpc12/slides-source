@@ -1,0 +1,636 @@
+\documentclass[english,compress]{beamer}
+\input{settings}
+\def\hilite<#1>#2{\alt<#1>{\colorbox{blue!30}{#2}}{\colorbox{white}{#2}}%
+}
+
+\lstset{
+  language=C++,
+  rangebeginprefix=/*\ ,
+  rangeendprefix=/*\ ,
+}
+
+\begin{document}
+% {{{ front matter
+
+\title{High-Performance Scientific Computing\\Lecture 8: CPU Performance}
+
+\date{MATH-GA 2011 / CSCI-GA 2945 $\cdot$ October 24, 2012}
+
+\frame{\titlepage}
+
+\begin{frame}{Today}
+  \tableofcontents[hideallsubsections]
+\end{frame}
+% }}}
+% -----------------------------------------------------------------------------
+\begin{frame}{Bits and pieces}
+  \begin{itemize}
+    \item HW3: reports out
+    \item HW5: due today
+    \item HW6: out tomorrow
+    \item Project Pitches
+  \end{itemize}
+\end{frame}
+% -----------------------------------------------------------------------------
+\section[Software]{Tool of the day: Installing software}
+% -----------------------------------------------------------------------------
+\begin{frame}{Valgrind}
+  \begin{center}
+  \Huge Valgrind demo time
+  \end{center}
+\end{frame}
+% -----------------------------------------------------------------------------
+\section{Closer to the machine}
+% -----------------------------------------------------------------------------
+\def\procpic{
+  \node [rectangle,draw,thick,fill=green!30, inner xsep=4cm,
+    anchor=south] at (0,0) (idbus) { Internal Bus };
+  \node (reg) [rectangle,draw,thick,fill=black!20,
+    inner ysep=5mm,anchor=south]
+    at ($ (idbus.north) + (-2cm,0.75) $) {Register File} ;
+  \node (flags) [anchor=south east,draw,thick,fill=black!20,inner ysep=0.75mm]
+    at(reg.south east) {Flags} ;
+  \node (alu) [trapezium,
+    trapezium left angle=130,
+    trapezium right angle=130,
+    inner ysep=3mm,
+    draw,thick,fill=black!20,anchor=north]
+    at ($ (idbus.south) + (2,-0.75) $) {Data ALU} ;
+  \node (addr) [trapezium,
+    trapezium left angle=50,
+    trapezium right angle=50,
+    inner ysep=3mm,
+    draw,thick,fill=black!20,anchor=south west]
+    at ($ (reg.north) + (0,0.75) $) {Address ALU} ;
+  \node (ctrl) [arrow box,draw,thick,fill=black!20,anchor=north,
+    inner ysep=5mm,arrow box arrows={north:.475cm,east:.475cm},
+    arrow box shaft width=2mm,inner xsep=4mm]
+    at ($ (idbus.south) + (-2cm,-0.275) $) {Control Unit} ;
+  \node (pc) [anchor=north east,draw,thick,fill=black!20,inner ysep=0.75mm]
+    at(ctrl.north east) {PC} ;
+  \node (mem) [rectangle,draw,thick,fill=black!20,
+    inner ysep=3mm,anchor=west,rotate=90,inner xsep=5mm,minimum
+    width=3.5cm, minimum height=1cm]
+    at ($ (idbus.north) + (2,0.75) $) { } ;
+  \node at (mem.south east) [anchor=north west] {Memory Interface} ;
+  \draw [line width=1mm,<-] (alu.north west) -- +(0,0.75) ;
+  \draw [line width=1mm,<-] (alu.north east) -- +(0,0.75) ;
+  \draw [line width=1mm,->] (alu.south) |- +(1,-0.25) -| ($ (idbus.south) + (4.5,0) $);
+  \draw [line width=1mm,<->] (reg.south) -- +(0,-0.75);
+  \draw [line width=1mm,->] (reg.north) -- (addr.south west);
+  \draw [line width=1mm,->] ($ (idbus.north) + (-0.5,0) $) |- ++(0,2.5) -| (addr.south east);
+  \draw [line width=1mm,->] ($ (idbus.south) + (-4,0) $) |- (ctrl.west)
+    node [pos=0.3,anchor=east,font=\footnotesize,text width=7mm] {Insn. fetch};
+  \draw [line width=1mm,->] (addr.north) |- ++(2.6,0.25) |- (mem.north) ;
+  \draw [line width=1mm,<->] (mem.west) -- +(0,-0.75) ;
+  \draw [line width=1mm,<->] (mem.west) -- +(0,-0.75) ;
+  \draw [line width=1mm,<->] (mem.west) -- +(0,-0.75) ;
+  \draw [line width=1mm,<->] ($ (mem.south) + (0,-.75) $) coordinate (dataexit) -- +(0.75,0)
+    node [pos=1,anchor=west] {Data Bus} ;
+  \draw [line width=1mm,->] ($ (mem.south) + (0,.75) $) coordinate (addrexit) -- +(0.75,0)
+    node [pos=1,anchor=west] {Address Bus} ;
+
+  \draw [line width=1mm,dotted,opacity=0.3] (dataexit) -| (mem.west) ;
+  \draw [line width=1mm,dotted,opacity=0.3] (addrexit) -| ++(-0.4,0) |- (mem.north) ;
+}
+\begin{frame}{A Basic Processor}
+  \begin{tikzpicture}
+    \procpic
+  \end{tikzpicture}
+  {\small (loosely based on Intel 8086)}
+  \uncover<2>{
+    \begin{tikzpicture} [overlay]
+      \node [draw,drop shadow,fill=white,anchor=south west,xshift=1cm,yshift=1.5cm,
+      text width=0.4\textwidth, inner xsep=0.5cm,inner ysep=0.5cm,thick]
+        at (current page.south west)
+        {
+        \emph{Bonus Question:}
+
+        What's a
+        \weblink{http://en.wikipedia.org/wiki/Bus_(computing)}{bus}?
+        } ;
+    \end{tikzpicture}
+  }
+\end{frame}
+
+% -----------------------------------------------------------------------------
+
+% -----------------------------------------------------------------------------
+\subsection[Assembly]{Machine Language}
+% -----------------------------------------------------------------------------
+% {{{
+\begin{frame}[fragile]{A Very Simple Program}
+  \begin{columns}
+    \column{0.25\textwidth}
+    \lstinputlisting[linerange=start-end]{assembly.c}
+    \column{0.75\textwidth}
+    \lstinputlisting[language=HTML,basicstyle=\footnotesize]{assembly.S}
+  \end{columns}
+
+  Things to know:
+  \begin{itemize}
+  \item \weblink{http://en.wikipedia.org/wiki/Addressing_mode}{Addressing
+  modes} (Immediate, Register, Base plus Offset)
+  \item
+  \weblink{http://en.wikipedia.org/wiki/Hexadecimal}{0xHexadecimal}
+  \item ``AT\&T Form'': (we'll use this)\\
+    \verb|<opcode><size> <source>, <dest>|
+  \end{itemize}
+\end{frame}
+\begin{frame}{Another Look}
+  \begin{tikzpicture}
+    \procpic
+  \end{tikzpicture}
+  \uncover<2>{
+  \begin{tikzpicture} [overlay]
+    \node [draw,drop shadow,fill=white,anchor=north east,xshift=-0.5cm,yshift=-0.5cm,
+    text width=0.6\textwidth, inner ysep=1mm,thick,inner xsep=3mm]
+      at (current page.north east)
+      {
+        \lstinputlisting[language=HTML,basicstyle=\tiny]{assembly.S}
+      } ;
+  \end{tikzpicture}
+  }
+\end{frame}
+\begin{frame}[fragile]{A Very Simple Program: Intel Form}
+  \lstinputlisting[language=HTML,basicstyle=\footnotesize]{assembly-intel.S}
+
+  \begin{itemize}
+  \item ``Intel Form'': (you might see this on the net)\\
+    \verb|<opcode> <sized dest>, <sized source>|
+  \item Goal: Reading comprehension.
+  \item Don't understand an opcode?\\
+    Google ``\verb|<opcode> intel instruction|''.
+  \end{itemize}
+\end{frame}
+\begin{frame}{Machine Language Loops}
+  \begin{columns}
+    \column{0.3\textwidth}
+    \lstinputlisting{loop-assembly.c}
+    \column{0.75\textwidth}
+    \lstinputlisting[language=HTML,basicstyle=\scriptsize]{loop-assembly.S}
+  \end{columns}
+
+  Things to know:
+  \begin{itemize}
+  \item
+  \weblink{http://en.wikipedia.org/wiki/Status_register}{Condition
+  Codes (Flags)}: Zero, Sign, Carry, etc.
+  \item \weblink{http://en.wikipedia.org/wiki/Call_stack}{Call Stack}:
+    Stack frame, stack pointer, base pointer
+  \item
+  \weblink{http://en.wikipedia.org/wiki/Application_binary_interface}{ABI}:
+    Calling conventions
+  \end{itemize}
+
+  \uncover<2>{
+  \begin{tikzpicture} [overlay]
+    \node [draw,drop shadow,fill=white,anchor=south east,xshift=-1cm,yshift=1cm,
+    text width=0.9\textwidth,thick,inner sep=5mm]
+      at (current page.south east)
+      {
+        \begin{itemize}
+          \item DIY Demo
+
+          \item \url{http://assembly.ynh.io/}
+
+            [\url{https://github.com/ynh/cpp-to-assembly}]
+          \item \url{http://gcc.godbolt.org/}
+
+          \item \url{http://llvm.org/demo/}
+        \end{itemize}
+      } ;
+  \end{tikzpicture}
+  }
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{Web demo}
+  \begin{center}
+  \Huge \url{http://assembly.ynh.io/} demo time
+  \end{center}
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{We know how a computer works!}
+
+  All of this can be built in about 4000 transistors.
+
+  (e.g. MOS 6502 in Apple II, Commodore 64, Atari 2600)
+  \medskip
+
+  So what exactly is Intel doing with the other 623,996,000 transistors?
+  \medskip
+
+  Answer: \uncover<2->{\emph{Make things go faster!}}
+  \medskip
+
+  \uncover<3->{
+  \textbf{Goal now:}
+
+  Understand sources of slowness, and how they get addressed.
+  \medskip
+
+  Remember: \emph{High Performance} Computing
+  }
+\end{frame}
+% }}}
+% -----------------------------------------------------------------------------
+\subsection[Memory]{The Memory Hierarchy}
+% -----------------------------------------------------------------------------
+% {{{
+\input{how-does-computer-memory-work}
+\begin{frame}{What is\dots a Memory Interface?}
+  \begin{columns}
+    \column{0.7\textwidth}
+      \textbf{Memory Interface} gets and stores binary words in
+      off-chip memory.
+      \medskip
+
+      Smallest granularity: Bus width
+      \medskip
+
+      Tells outside memory
+      \begin{itemize}
+        \item ``where'' through \emph{address bus}
+        \item ``what'' through \emph{data bus}
+      \end{itemize}
+
+      Computer main memory is ``Dynamic RAM''
+      (\weblink{http://en.wikipedia.org/wiki/Dynamic_random_access_memory}{DRAM}):
+      Slow, but small and cheap.
+
+    \column{0.3\textwidth}
+      \includegraphics[width=\textwidth]{memory.png}
+  \end{columns}
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{Source of Slowness: Memory}
+  Memory is slow.
+  \medskip
+
+  Distinguish two different versions of ``slow'':
+  \begin{itemize}
+    \item Bandwidth
+    \item Latency
+  \end{itemize}
+  $\rightarrow$ Memory has \emph{long latency}, but can have
+  \emph{large bandwidth}.
+
+  \begin{center}
+  \includegraphics[width=0.4\textwidth]{mainboard.jpeg}
+  \end{center}
+
+  Size of die vs. distance to memory: big!
+
+  \medskip
+  Dynamic RAM: long intrinsic latency!
+
+  \uncover<2>{
+    \begin{tikzpicture} [overlay]
+      \node [draw,drop shadow,fill=white,anchor=south east,xshift=-0.5cm,yshift=0.5cm,
+      text width=0.4\textwidth, inner sep=3mm,thick]
+        at (current page.south east)
+        {
+        \emph{Idea:}\\[1ex]
+        Put a look-up table of recently-used data onto the
+        chip.\\[1ex]
+        $\rightarrow$
+        ``\weblink{http://en.wikipedia.org/wiki/CPU_cache}{Cache}''
+        } ;
+    \end{tikzpicture}
+  }
+\end{frame}
+
+% -----------------------------------------------------------------------------
+\begin{frame}{The Memory Hierarchy}
+  Hierarchy of increasingly bigger, slower memories:
+
+  \begin{center}
+  \begin{tikzpicture}[hieblock/.style={thick,draw,fill=green!20,
+  text width=0.4\textwidth, text centered}]
+    \node [hieblock] (reg) {Registers};
+    \node [hieblock,below=3ex of reg] (l1) {L1 Cache};
+    \node [hieblock,below=3ex of l1] (l2) {L2 Cache};
+    \node [hieblock,below=3ex of l2] (dram) {DRAM};
+    \node [hieblock,below=3ex of dram] (virt) {Virtual Memory\\ (hard drive)};
+
+    \node [right=2em of reg] {1 kB, 1 cycle };
+    \node [right=2em of l1] {10 kB, 10 cycles };
+    \node [right=2em of l2] {1 MB, 100 cycles };
+    \node [right=2em of dram] {1 GB, 1000 cycles };
+    \node [right=2em of virt] {1 TB, 1 M cycles };
+
+    \draw [thick,<->] (reg) -- (l1) ;
+    \draw [thick,<->] (l1) -- (l2) ;
+    \draw [thick,<->] (l2) -- (dram) ;
+    \draw [thick,<->] (dram) -- (virt) ;
+  \end{tikzpicture}
+  \end{center}
+  \uncover<2>{
+    \begin{tikzpicture} [overlay]
+      \node [draw,drop shadow,fill=white,anchor=south east,xshift=-0.5cm,yshift=0.5cm,
+      text width=0.6\textwidth, inner sep=5mm,thick]
+        at (current page.south east)
+        {
+          Second red/blue pebble game: played by cache controller
+
+          \bigskip
+          What is a \emph{working set}?
+
+          \bigskip
+          How might \emph{data locality} factor into this?
+        } ;
+    \end{tikzpicture}
+  }
+\end{frame}
+
+% -----------------------------------------------------------------------------
+\begin{frame}{Cache: Actual Implementation}
+  \begin{columns}
+    \column{0.55\textwidth}
+      Demands on cache implementation:
+      \begin{itemize}
+        \item Fast, small, cheap, low power
+        \item Fine-grained
+        \item High ``hit''-rate (few ``misses'')
+      \end{itemize}
+
+    \column{0.4\textwidth}
+      \includegraphics[width=\textwidth]{basic-cache.pdf}
+  \end{columns}
+
+  \bigskip
+  \emph{Problem:}
+
+  \colorbox{gray!20}{
+  Goals at odds with each other:
+  Access matching logic expensive!
+  }
+
+  \bigskip
+  \emph{Solution 1}: More data per unit of access matching logic\\
+  \hfill $\rightarrow$ Larger ``Cache Lines''
+
+  \bigskip
+  \emph{Solution 2}: Simpler/less access matching logic\\
+  \hfill $\rightarrow$ Less than full ``Associativity''
+
+  \bigskip
+  Other choices: Eviction strategy, size
+\end{frame}
+\addimgcredit{Basic cache: Wikipedia \cc}
+% -----------------------------------------------------------------------------
+\begin{frame}{Cache: Associativity}
+  \begin{center}
+    \begin{tikzpicture}[yscale=-0.4,xscale=0.7,font=\small]
+
+      \node at (3,-2) { Direct Mapped } ;
+      \draw [thick] (0,0) rectangle +(2,-1)
+        node [pos=0.5,text depth=0.4ex] {Memory};
+      \foreach\i in {0,1,2,...,6}
+      {
+        \draw [thick] (0,\i) rectangle +(2,1) node [pos=0.5] {\i};
+        \pgfmathtruncatemacro{\tgt}{mod(\i,4)}
+        \draw [-stealth,thick] (2,\i+0.5) -- (4,\tgt+0.5) ;
+      }
+      \node at (1,7.5) { $\vdots$ };
+
+      \draw [thick] (4,0) rectangle +(2,-1)
+        node [pos=0.5,text depth=0.4ex] {Cache};
+      \foreach\i in {0,1,2,...,3}
+      \draw [thick] (4,\i) rectangle +(2,1) node [pos=0.5] {\i};
+
+    \end{tikzpicture}
+    \hspace{1cm}
+    \uncover<+->{}
+    \uncover<+->{
+      \begin{tikzpicture}[yscale=-0.4,xscale=0.7,font=\small]
+        \node at (3,-2) { 2-way set associative } ;
+        \draw [thick] (0,0) rectangle +(2,-1)
+        node [pos=0.5,text depth=0.4ex] {Memory};
+        \foreach\i in {0,1,2,...,6}
+        {
+          \draw [thick] (0,\i) rectangle +(2,1) node [pos=0.5] {\i};
+          \pgfmathtruncatemacro{\tgt}{mod(2*\i,4)}
+          \draw [-stealth,thick] (2,\i+0.5) -- (4,\tgt+0.5) ;
+          \uncover<+->{
+            \pgfmathtruncatemacro{\tgt}{mod(2*\i+1,4)}
+            \draw [-stealth,thick] (2,\i+0.5) -- (4,\tgt+0.5) ;
+          }
+        }
+        \node at (1,7.5) { $\vdots$ };
+
+        \draw [thick] (4,0) rectangle +(2,-1)
+        node [pos=0.5,text depth=0.4ex] {Cache};
+        \foreach\i in {0,1,2,...,3}
+        \draw [thick] (4,\i) rectangle +(2,1) node [pos=0.5] {\i};
+
+      \end{tikzpicture}
+    }
+  \end{center}
+  \uncover<+>{
+  \begin{tikzpicture} [overlay]
+    \node [draw,drop shadow,fill=white,anchor=south east,xshift=-1cm,yshift=1cm,
+    text width=0.7\textwidth,thick,inner sep=5mm]
+      at (current page.south east)
+      {
+        \includegraphics[width=\textwidth]{cache-assoc-miss.pdf}
+
+        Miss rate versus cache size on the Integer portion of
+        SPEC~CPU2000 [Cantin, Hill 2003]
+      } ;
+  \end{tikzpicture}
+  }
+\end{frame}
+\addimgcredit{Cache associativity: based on Wikipedia \cc}
+\addimgcredit{Cache associativity vs miss rate: Wikipedia \cc, }
+
+% -----------------------------------------------------------------------------
+\begin{frame}{CPUID}
+  \begin{center}
+  \Huge CPUID demo time
+  \end{center}
+\end{frame}
+
+\def\cacheslide#1#2{
+\begin{frame}{#1}
+  \lstinputlisting[basicstyle=\scriptsize]{microbench/#2.c}
+  \creditto{Original benchmarks by Igor Ostrovsky}
+  \uncover<2>{
+    \begin{tikzpicture} [overlay]
+      \node [draw,drop shadow,fill=white,anchor=south east,xshift=-0.5cm,yshift=0.5cm,
+      text width=0.8\textwidth, inner sep=5mm,thick]
+        at (current page.south east)
+        {
+        \includegraphics[width=\textwidth]{microbench/#2-crop.pdf}
+        } ;
+    \end{tikzpicture}
+  }
+\end{frame}
+}
+
+\cacheslide{Updating every $k$th integer}{strides}
+\cacheslide{Measuring bandwidths}{bw}
+\cacheslide{Another mystery}{assoc}
+
+\addimgcredit{Cache Measurements: Igor Ostrovsky}
+
+% -----------------------------------------------------------------------------
+\begin{frame}{Core Message}
+  \begin{center}
+    Learned a lot about caches.
+
+    \bigskip
+    Also learned:
+
+    \bigskip
+    {\Large Honest measurements are \emph{hard}.}
+
+    \vspace{2cm}
+    A good attempt:
+
+    \url{http://www.bitmover.com/lmbench/}
+
+    \footnotesize
+    Instructions:
+
+    \url{http://download.intel.com/design/intarch/papers/321074.pdf}
+  \end{center}
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{Programming for the Cache}
+  How can we rearrange programs to be cache-friendly?
+
+  \bigskip
+  Examples:
+  \begin{itemize}
+  \item<+-> Large vectors $x$, $a$, $b$
+
+  Compute\[
+  x \leftarrow x+3a-5b.
+  \]
+  \item<+-> Matrix-Matrix Multiplication
+  \end{itemize}
+\end{frame}
+% }}}
+% -----------------------------------------------------------------------------
+\subsection{Pipelines}
+% -----------------------------------------------------------------------------
+% {{{
+\begin{frame}{Source of Slowness: Sequential Operation}
+  \includegraphics[width=\textwidth]{no-pipeline.png}
+  \begin{description}
+    \item[IF] Instruction fetch
+    \item[ID] Instruction Decode
+    \item[EX] Execution
+    \item[MEM] Memory Read/Write
+    \item[WB] Result Writeback
+  \end{description}
+\end{frame}
+\addimgcredit{Pipelining: Wikipedia \cc}
+\begin{frame}{Solution: Pipelining}
+  \includegraphics[width=\textwidth]{five-stage-pipeline.png}
+\end{frame}
+\begin{frame}{Pipelining}
+  \includegraphics[width=\textwidth]{mips-pipeline.png}
+
+  \small (MIPS, 110,000 transistors)
+\end{frame}
+
+\begin{frame}{Issues with Pipelines}
+  \begin{columns}
+    \column{0.5\textwidth}
+      Pipelines generally help performance--but not always.
+
+      \medskip
+      Possible issue: Dependencies\dots
+      \begin{itemize}
+        \item \dots on memory
+        \item \dots on previous computation
+        \item \dots on branch outcomes
+      \end{itemize}
+      ``Solution'': Bubbling
+    \column{0.5\textwidth}
+      \includegraphics[width=0.8\textwidth]{pipeline-bubble.pdf}
+  \end{columns}
+  \uncover<2>{
+    \begin{tikzpicture} [overlay]
+      \node [draw,drop shadow,fill=white,anchor=south east,xshift=-0.5cm,yshift=0.5cm,
+       inner sep=5mm,thick]
+        at (current page.south east)
+        {
+          For branches: could guess\dots?
+        } ;
+    \end{tikzpicture}
+  }
+\end{frame}
+\addimgcredit{Bubbly Pipeline: Wikipedia \cc}
+
+\begin{frame}{Pipelines}
+  \begin{center}
+  \Huge Performance mystery demo time
+  \end{center}
+\end{frame}
+
+\begin{frame}{Sandy Bridge Pipeline}
+  \begin{center}
+  \includegraphics[height=0.85\textheight]{sandy-bridge-pipeline.png}
+  \end{center}
+
+  \creditto{David Kanter / Realworldtech.com}
+  \uncover<2>{
+    \begin{tikzpicture} [overlay]
+      \node [draw,drop shadow,fill=white,anchor=north east,xshift=-0.5cm,yshift=-0.5cm,
+      text width=0.4\textwidth, inner sep=3mm,thick]
+        at (current page.north east)
+        {
+        New concept:\\
+        Instruction-level\\
+        parallelism\\
+        (``Superscalar'')
+        } ;
+    \end{tikzpicture}
+  }
+\end{frame}
+
+\begin{frame}{Programming for the Pipeline}
+  How to upset a processor pipeline:
+  \lstinputlisting{loop-with-if.c}
+
+  \hfill \dots why is this bad?
+\end{frame}
+
+\begin{frame}{A Puzzle}
+  \lstinputlisting{datadep.c}
+  Which is faster?
+
+  \bigskip
+  \hfill \dots and why?
+\end{frame}
+
+\begin{frame}{Two useful Strategies}
+  \weblink{http://en.wikipedia.org/wiki/Loop_unwinding}{Loop unrolling}:
+  \begin{columns}
+    \column{0.45\textwidth}
+      \lstinputlisting[linerange=unr1-end]{pipeline-strategies.c}
+    \column{0.05\textwidth}
+      \Large$\rightarrow$
+    \column{0.45\textwidth}
+      \lstinputlisting[linerange=unr2-end]{pipeline-strategies.c}
+  \end{columns}
+  \weblink{http://en.wikipedia.org/wiki/Software_pipelining}{Software pipelining}:
+  \begin{columns}
+    \column{0.45\textwidth}
+      \lstinputlisting[linerange=spl1-end]{pipeline-strategies.c}
+    \column{0.05\textwidth}
+      \Large$\rightarrow$
+    \column{0.45\textwidth}
+      \lstinputlisting[linerange=spl2-end]{pipeline-strategies.c}
+  \end{columns}
+\end{frame}
+% }}}
+
+\questionframe{}
+\imagecreditslide
+
+\end{document}
+% vim: foldmethod=marker
