@@ -3,6 +3,12 @@
 \def\hilite<#1>#2{\alt<#1>{\colorbox{blue!30}{#2}}{\colorbox{white}{#2}}%
 }
 
+\lstset{
+  language=C++,
+  rangebeginprefix=/*\ ,
+  rangeendprefix=/*\ ,
+}
+
 \begin{document}
 % {{{ front matter
 
@@ -19,7 +25,7 @@
 % -----------------------------------------------------------------------------
 \begin{frame}{Bits and pieces}
   \begin{itemize}
-    \item HW3: \dots
+    \item HW3: reports out
     \item HW5: due today
     \item HW6: out tomorrow
     \item Project Pitches
@@ -89,6 +95,12 @@
 \subsection{Point-to-Point, Part II}
 % -----------------------------------------------------------------------------
 % {{{
+\begin{frame}{MPI}
+  \begin{center}
+  \Huge Ordering demo recap
+  \end{center}
+\end{frame}
+% -----------------------------------------------------------------------------
 \begin{frame}{MPI: Ordering}
   \uncover<+->{}
   \textbf{MPI 3.0, Section 3.5:}
@@ -566,7 +578,7 @@
   \end{frame}
 }
 \sectionslide{/}{1}{Parallel Zoo}{}
-\sectionslide{}{2}{\emph{Understanding} Performance}{}
+\sectionslide{}{2}{\emph{Understanding} Computational Cost}{}
 % -----------------------------------------------------------------------------
 \section[Asymptotics]{Understanding performance through asymptotics}
 % -----------------------------------------------------------------------------
@@ -642,6 +654,19 @@
     \end{tikzpicture}
   }
 \end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{Work/Span: Examples}
+  Determine $T_1$ and $T_\infty$ for:
+
+  \begin{itemize}[<+->]
+    \item Adding two vectors of length $n$
+    \item Matrix-vector multiplication ($n \times n$)
+    \item Summing a vector of length $n$
+    \item \strut\only<.>{Bubble sort}\only<+->{\sout{Bubble sort} Odd-even
+      transposition sort}
+  \end{itemize}
+\end{frame}
+% -----------------------------------------------------------------------------
 % }}}
 % -----------------------------------------------------------------------------
 \subsection{Memory Cost}
@@ -997,7 +1022,8 @@
   \bigskip
   Matrix-matrix Multiplication:
   \[
-    \text{Min I/O time}\sim \frac{n^3}{\sqrt{\text{\# close cells}}}
+    \text{Min I/O time}\sim \frac{n^3}{\sqrt{\text{\# close cells}}
+    }
   \]
 \end{frame}
 
@@ -1142,10 +1168,11 @@
 \addimgcredit{ Sandy bridge bottom: Wikimedia Commons \cc }
 \addimgcredit{ Sandy bridge die: Intel Corp. }
 \addimgcredit{ GTX 480: Nvidia Corp. \cc}
-
+% }}}
 % -----------------------------------------------------------------------------
 \subsection[Basics]{The Basic Subsystems}
 % -----------------------------------------------------------------------------
+% {{{
 \def\procpic{
   \node [rectangle,draw,thick,fill=green!30, inner xsep=4cm,
     anchor=south] at (0,0) (idbus) { Internal Bus };
@@ -1216,6 +1243,7 @@
     \end{tikzpicture}
   }
 \end{frame}
+% -----------------------------------------------------------------------------
 \begin{frame}{How all of this fits together}
   \begin{columns}
     \column{0.6\textwidth}
@@ -1247,6 +1275,7 @@
 
   \end{columns}
 \end{frame}
+% -----------------------------------------------------------------------------
 \begin{frame}{What is\dots an ALU?}
   \begin{columns}
     \column{0.6\textwidth}
@@ -1279,6 +1308,7 @@
       \includegraphics[width=\textwidth]{alu.pdf}
   \end{columns}
 \end{frame}
+% -----------------------------------------------------------------------------
 \begin{frame}{What is\dots a Register File?}
   \begin{columns}
     \column{0.7\textwidth}
@@ -1312,7 +1342,18 @@
         }
       \end{tikzpicture}
   \end{columns}
+  \uncover<+>{}
+  \uncover<+>{
+    \begin{tikzpicture} [overlay]
+      \node [above left=1cm of current page.south east, draw,drop shadow,fill=white,
+      inner xsep=0.5cm,inner ysep=0.5cm,thick]
+        {
+          First red/blue pebble game, played by compiler.
+        } ;
+    \end{tikzpicture}
+  }
 \end{frame}
+% -----------------------------------------------------------------------------
 \input{how-does-computer-memory-work}
 \begin{frame}{What is\dots a Memory Interface?}
   \begin{columns}
@@ -1338,9 +1379,11 @@
       \includegraphics[width=\textwidth]{memory.png}
   \end{columns}
 \end{frame}
+% }}}
 % -----------------------------------------------------------------------------
 \subsection[Assembly]{Machine Language}
 % -----------------------------------------------------------------------------
+% {{{
 \begin{frame}[fragile]{A Very Simple Program}
   \begin{columns}
     \column{0.25\textwidth}
@@ -1408,7 +1451,7 @@
   \uncover<2>{
   \begin{tikzpicture} [overlay]
     \node [draw,drop shadow,fill=white,anchor=south east,xshift=-1cm,yshift=1cm,
-    text width=0.8\textwidth,thick,inner sep=5mm]
+    text width=0.9\textwidth,thick,inner sep=5mm]
       at (current page.south east)
       {
         \begin{itemize}
@@ -1425,6 +1468,13 @@
   \end{tikzpicture}
   }
 \end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{Web demo}
+  \begin{center}
+  \Huge \url{http://assembly.ynh.io/} demo time
+  \end{center}
+\end{frame}
+% -----------------------------------------------------------------------------
 \begin{frame}{We know how a computer works!}
 
   All of this can be built in about 4000 transistors.
@@ -1447,38 +1497,11 @@
   Remember: \emph{High Performance} Computing
   }
 \end{frame}
-
-
-\begin{frame}{The High-Performance Mindset}
-  \begin{columns}
-    \column{0.3\textwidth}
-      \includegraphics[width=\textwidth]{aim.jpeg}
-    \column{0.7\textwidth}
-      \begin{block}{Writing high-performance Codes}
-        Mindset: What is going to be the limiting factor?
-
-        \begin{itemize}
-          \item ALU?
-          \item Memory?
-          \item Communication? (if multi-machine)
-        \end{itemize}
-      \end{block}
-
-      Benchmark the assumed limiting factor right away.
-
-      \begin{block}{Evaluate}
-        \begin{itemize}
-          \item Know your peak throughputs (roughly)
-          \item Are you getting close?
-          \item Are you tracking the right limiting factor?
-        \end{itemize}
-      \end{block}
-  \end{columns}
-\end{frame}
-
+% }}}
 % -----------------------------------------------------------------------------
 \subsection[Memory]{The Memory Hierarchy}
 % -----------------------------------------------------------------------------
+% {{{
 \begin{frame}{Source of Slowness: Memory}
   Memory is slow.
   \medskip
@@ -1544,11 +1567,16 @@
   \uncover<2>{
     \begin{tikzpicture} [overlay]
       \node [draw,drop shadow,fill=white,anchor=south east,xshift=-0.5cm,yshift=0.5cm,
-      text width=0.4\textwidth, inner sep=5mm,thick]
+      text width=0.6\textwidth, inner sep=5mm,thick]
         at (current page.south east)
         {
-        How might \emph{data locality} factor into this?\\[1ex]
-        What is a \emph{working set}?
+          Second red/blue pebble game: played by cache controller
+
+          \bigskip
+          What is a \emph{working set}?
+
+          \bigskip
+          How might \emph{data locality} factor into this?
         } ;
     \end{tikzpicture}
   }
@@ -1560,7 +1588,7 @@
     \column{0.55\textwidth}
       Demands on cache implementation:
       \begin{itemize}
-        \item Fast, small, cheap, low-power
+        \item Fast, small, cheap, low power
         \item Fine-grained
         \item High ``hit''-rate (few ``misses'')
       \end{itemize}
@@ -1612,28 +1640,33 @@
 
     \end{tikzpicture}
     \hspace{1cm}
-    \begin{tikzpicture}[yscale=-0.4,xscale=0.7,font=\small]
-      \node at (3,-2) { 2-way set associative } ;
-      \draw [thick] (0,0) rectangle +(2,-1)
+    \uncover<+->{}
+    \uncover<+->{
+      \begin{tikzpicture}[yscale=-0.4,xscale=0.7,font=\small]
+        \node at (3,-2) { 2-way set associative } ;
+        \draw [thick] (0,0) rectangle +(2,-1)
         node [pos=0.5,text depth=0.4ex] {Memory};
-      \foreach\i in {0,1,2,...,6}
-      {
-        \draw [thick] (0,\i) rectangle +(2,1) node [pos=0.5] {\i};
-        \pgfmathtruncatemacro{\tgt}{mod(2*\i,4)}
-        \draw [-stealth,thick] (2,\i+0.5) -- (4,\tgt+0.5) ;
-        \pgfmathtruncatemacro{\tgt}{mod(2*\i+1,4)}
-        \draw [-stealth,thick] (2,\i+0.5) -- (4,\tgt+0.5) ;
-      }
-      \node at (1,7.5) { $\vdots$ };
+        \foreach\i in {0,1,2,...,6}
+        {
+          \draw [thick] (0,\i) rectangle +(2,1) node [pos=0.5] {\i};
+          \pgfmathtruncatemacro{\tgt}{mod(2*\i,4)}
+          \draw [-stealth,thick] (2,\i+0.5) -- (4,\tgt+0.5) ;
+          \uncover<+->{
+            \pgfmathtruncatemacro{\tgt}{mod(2*\i+1,4)}
+            \draw [-stealth,thick] (2,\i+0.5) -- (4,\tgt+0.5) ;
+          }
+        }
+        \node at (1,7.5) { $\vdots$ };
 
-      \draw [thick] (4,0) rectangle +(2,-1)
+        \draw [thick] (4,0) rectangle +(2,-1)
         node [pos=0.5,text depth=0.4ex] {Cache};
-      \foreach\i in {0,1,2,...,3}
-      \draw [thick] (4,\i) rectangle +(2,1) node [pos=0.5] {\i};
+        \foreach\i in {0,1,2,...,3}
+        \draw [thick] (4,\i) rectangle +(2,1) node [pos=0.5] {\i};
 
-    \end{tikzpicture}
+      \end{tikzpicture}
+    }
   \end{center}
-  \uncover<2>{
+  \uncover<+>{
   \begin{tikzpicture} [overlay]
     \node [draw,drop shadow,fill=white,anchor=south east,xshift=-1cm,yshift=1cm,
     text width=0.7\textwidth,thick,inner sep=5mm]
@@ -1659,7 +1692,8 @@
 
 \def\cacheslide#1#2{
 \begin{frame}{#1}
-  \lstinputlisting{microbench/#2.c}
+  \lstinputlisting[basicstyle=\scriptsize]{microbench/#2.c}
+  \creditto{Original benchmarks by Igor Ostrovsky}
   \uncover<2>{
     \begin{tikzpicture} [overlay]
       \node [draw,drop shadow,fill=white,anchor=south east,xshift=-0.5cm,yshift=0.5cm,
@@ -1670,16 +1704,38 @@
         } ;
     \end{tikzpicture}
   }
-  \creditto{Original benchmarks by Igor Ostrovsky}
 \end{frame}
 }
 
-\cacheslide{Measuring the Cache I}{strides}
-\cacheslide{Measuring the Cache II}{bw}
-\cacheslide{Measuring the Cache III}{assoc}
+\cacheslide{Updating every $k$th integer}{strides}
+\cacheslide{Measuring bandwidths}{bw}
+\cacheslide{Another mystery}{assoc}
 
 \addimgcredit{Cache Measurements: Igor Ostrovsky}
 
+% -----------------------------------------------------------------------------
+\begin{frame}{Core Message}
+  \begin{center}
+    Learned a lot about caches.
+
+    \bigskip
+    Also learned:
+
+    \bigskip
+    {\Large Honest measurements are \emph{hard}.}
+
+    \vspace{2cm}
+    A good attempt:
+
+    \url{http://www.bitmover.com/lmbench/}
+
+    \footnotesize
+    Instructions:
+
+    \url{http://download.intel.com/design/intarch/papers/321074.pdf}
+  \end{center}
+\end{frame}
+% -----------------------------------------------------------------------------
 \begin{frame}{Programming for the Cache}
   How can we rearrange programs to be cache-friendly?
 
@@ -1694,10 +1750,11 @@
   \item<+-> Matrix-Matrix Multiplication
   \end{itemize}
 \end{frame}
-
+% }}}
 % -----------------------------------------------------------------------------
 \subsection{Pipelines}
 % -----------------------------------------------------------------------------
+% {{{
 \begin{frame}{Source of Slowness: Sequential Operation}
   \includegraphics[width=\textwidth]{no-pipeline.png}
   \begin{description}
@@ -1809,13 +1866,11 @@
       \lstinputlisting[linerange=spl2-end]{pipeline-strategies.c}
   \end{columns}
 \end{frame}
+% }}}
 
 
 \questionframe{}
-%\imagecreditslide
-
-% TODO: red-blue pebbles
-% TODO: microbenchmarks
+\imagecreditslide
 
 \end{document}
 % vim: foldmethod=marker

@@ -1,7 +1,57 @@
 -------------------------------------------------------------------------------
 valgrind demo
 -------------------------------------------------------------------------------
-...
+valgrind
+  Finding crash bugs before they cause crashes?
+  memcheck
+  -----------------------------------------------------------------------------
+  FIRST TYPE OF BUG: Uninitialized values
+    valgrind matmul (NOTHING)
+
+  Add "-g"
+  Re-point out antagonism of -O and -g
+
+  DEBUG_FLAGS=-g make
+
+  Check unintialized line
+  valgrind --track-origins=yes matmul 5
+
+  -----------------------------------------------------------------------------
+  SECOND TYPE OF BUG: Out-of
+    valgrind matmul 5
+
+  but:
+    doesn't show for what indices!
+    valgrind --db-attach=yes
+    (depends on -g)
+  -----------------------------------------------------------------------------
+  THIRD TYPE OF BUG: Leaks
+    valgrind matmul 5
+    valgrind --leak-check=full matmul 5
+  -----------------------------------------------------------------------------
+  TODO: Usage with crappy/highly optimized code (CL implementations, Python)
+
+  valgrind --suppressions=opencl.supp ./cl-demo 1000 10
+  Add strcmp suppression
+  too broad
+  go up in stack with C++ function name
+  doesn't work
+  --demangle
+  add a C++ suppression
+  -----------------------------------------------------------------------------
+  Mention MPI
+  -----------------------------------------------------------------------------
+  TOOL: helgrind
+  - Need to recompile gcc with special flag
+  - Next week's "tool of the week": Compiling your own GNU-ish software
+  -----------------------------------------------------------------------------
+  But wait, there's more:
+  valgrind --tool=callgrind ./cl-demo 1000 10
+
+  Forward pointer: Once we know what caches are, you can also gather simulated
+    cache behavior
+
+  valgrind --tool=cachegrind ./cl-demo 1000 10
 -------------------------------------------------------------------------------
 mpi demo cont'd
 -------------------------------------------------------------------------------
@@ -86,4 +136,9 @@ CPUID Demo:
 Branch predictor demo:
 
 - set-governor performance
-- set-governor performance
+- make perf-mystery
+- run
+- enable sort
+- make perf-mystery
+- run
+- show code. Why?
