@@ -101,7 +101,9 @@ portion $[50i,50(i+1))\times [0,50)$, i.e. from $x$-coordinate $50i$ up to
 
     You may want to use non-blocking communication to avoid deadlocks
     and communication ordering issues. Your code has to work for any
-    number of ranks.
+    number of ranks. Also make sure to send all fish that go from one
+    rank to another in \emph{one} message to avoid incurring message
+    send cost repeatedly.
 
     You'll also have to deal with the fact that a variable number of
     fish may wander from one sub-tank to the next in a time step.
@@ -134,7 +136,7 @@ portion $[50i,50(i+1))\times [0,50)$, i.e. from $x$-coordinate $50i$ up to
     together horizontally:
     \begin{lstlisting}
       for step in $( seq -f "%04g" 0 100) ; do
-        montage fish-step$step-rank*.ppm -mode Concatenate fish-step$step.png
+        convert fish-step$step-rank*.ppm +append fish-step$step.png
       done
     \end{lstlisting}%stopzone
     You may have to change the number 100 to the actual number of time
@@ -153,6 +155,9 @@ portion $[50i,50(i+1))\times [0,50)$, i.e. from $x$-coordinate $50i$ up to
     steps to simulate. Insert barriers around your code, and have 
     rank 0 output a simulation timing at the end, in units of `fish
     updates per second', where this counts the total number of fish.
+
+  \item % TODO
+    Time on multiple ranks
 \end{enumerate}
 Turn in your code as \texttt{fish.c} along with a \texttt{Makefile}.
 

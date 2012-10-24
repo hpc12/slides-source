@@ -1,14 +1,42 @@
+WAKE UP SLATE
 -------------------------------------------------------------------------------
 Software installation demo
 -------------------------------------------------------------------------------
-TODO
+- what's an environment variable?
+
+tmux -> cuda cluster
+- Copy link
+- wget ...
+- configure tmux
+- missing libevent
+- get, build libevent
+- examine build tree
+- configure tmux (LIBEVENT_CFLAGS=-I, LIBEVENT_LIBS=-L -l0
+  <-- shell syntax
+- make
+- make install
+- run it
+- ldd
+- LD_LIBRARY_PATH
+- PATH
+- brief tmux demo
+  - terminal multiplexer
+  - detach / attach
+  - terminal sharing
 -------------------------------------------------------------------------------
-Disassembly demo
+Assembly demo
 -------------------------------------------------------------------------------
-- gcc -c loop-assembly.c
-- objdump --disassemble loop-assembly.o
-- gcc -c -O3 loop-assembly.c
-- repeat
+- Use loop-assembly for ynh demo
+--------------
+- gcc -c -O asm-reading-comprehension.c
+- objdump --disassemble
+- What's this do?
+- gcc -c -O0
+- objdump --disassemble
+- gcc -c -O3
+- objdump --disassemble
+- gcc -c -Ofast
+- objdump --disassemble
 -------------------------------------------------------------------------------
 CPUID Demo
 -------------------------------------------------------------------------------
@@ -18,9 +46,80 @@ CPUID Demo
 Branch predictor demo
 -------------------------------------------------------------------------------
 - set-governor performance
-- make perf-mystery
+- make pipeline-perf-mystery
 - run
 - enable sort
-- make perf-mystery
+- make pipeline-perf-mystery
 - run
 - show code. Why?
+-------------------------------------------------------------------------------
+Pipeline performance demo
+-------------------------------------------------------------------------------
+- compile, run pipeline-perf.c
+- copy, paste with b instead of a
+- guesses?
+- compile, run
+
+- unroll with a, a
+- guesses?
+- compile, run
+
+- unroll with aaaa, bbbbb
+- guesses?
+- compile, run
+
+- unroll with ab ab ab ab
+- guesses?
+- compile, run
+
+- compile with O3
+-------------------------------------------------------------------------------
+CL vector demo
+-------------------------------------------------------------------------------
+- run
+- develop vectorized version
+    vload(i, ary)
+    vstore(val, i, ary)
+- bare memory-bound: not that impressive
+- sin(): very impressive ! -> single thread
+- variable sizing
+- literals
+- accessing individual components
+- swizzling
+- select() -> vectorized if
+-------------------------------------------------------------------------------
+Denormal demo
+-------------------------------------------------------------------------------
+- show code
+- run with 5
+- run with very_small
+- 5 with -ffast-math
+- very-small with -ffast-math
+-------------------------------------------------------------------------------
+Pointer aliasing demo
+-------------------------------------------------------------------------------
+- show code
+- have them guess: does a[i] get reused?
+- make
+- disassemble
+- add *restrict
+- make
+- disassemble
+- Fortran faster than C?
+-------------------------------------------------------------------------------
+Alignment demo
+-------------------------------------------------------------------------------
+On crunchy3:
+- show code
+- run
+- misalign
+- run
+-------------------------------------------------------------------------------
+False sharing demo
+-------------------------------------------------------------------------------
+ON SLATE:
+-
+-------------------------------------------------------------------------------
+NUMA Demo
+-------------------------------------------------------------------------------
+ON CRUNCHY3:

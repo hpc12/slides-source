@@ -1,5 +1,15 @@
+Multithread performance:
+- Cache coherency protocols/snooping
+  - False sharing
+- NUMA
+
 - SIMD on CPU
 - MPI Performance
+
+Parallel languages worth knowing about:
+- UPC/PGAS
+- ispc
+- cilk
 
 Tools of the week:
 
