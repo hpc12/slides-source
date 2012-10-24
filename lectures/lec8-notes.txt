@@ -92,9 +92,11 @@ Denormal demo
 -------------------------------------------------------------------------------
 - show code
 - run with 5
+- "perf changed with 4?"
+- run with 4
 - run with very_small
-- 5 with -ffast-math
 - very-small with -ffast-math
+- 5 with -ffast-math
 -------------------------------------------------------------------------------
 Pointer aliasing demo
 -------------------------------------------------------------------------------
@@ -118,8 +120,28 @@ On crunchy3:
 False sharing demo
 -------------------------------------------------------------------------------
 ON SLATE:
--
+- show code
+- set-governor
+- ./run-count3s
+- why?!
+- fix it
+- rerun
+- "false sharing"
 -------------------------------------------------------------------------------
 NUMA Demo
 -------------------------------------------------------------------------------
 ON CRUNCHY3:
+- show code
+- have to pin thread -> core
+  - OTHERWISE NOTHING MAKES ANY SENSE
+- have to make sure memory is on determined node
+  - alternative: "first touch"
+
+- ./make-on-crunchy
+- show results
+- discuss locality matrix
+- single bw: NU for real
+- contention
+  - compare to zero contention case: that's like single-local
+- all-contention
+- two-contention

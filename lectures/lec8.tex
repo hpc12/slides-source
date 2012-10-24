@@ -695,8 +695,8 @@
   \end{itemize}
 
   \bigskip
-  OpenCL is one of the saner ways of expressing
-  vectorization.
+  OpenCL is also one of the saner ways of expressing
+  \emph{explicit} vectorization.
 
   \emph{(even on the CPU)}
 
@@ -705,7 +705,7 @@
   \begin{itemize}
     \item ``Intrinsics'': \texttt{\_mm256\_hadd\_ps}
     \item GCC extensions
-    \item \weblink{https://github.com/ispc/ispc}{ispc} (later)
+    \item \weblink{https://github.com/ispc/ispc}{ispc}
   \end{itemize}
 \end{frame}
 % -----------------------------------------------------------------------------
@@ -933,12 +933,14 @@
 \end{frame}
 % -----------------------------------------------------------------------------
 \begin{frame}{Other compiler optimizations}
+  More techniques:
   \begin{itemize}
     \item Inlining (see HW6)
     \item Unrolling
     \item Vectorization
   \end{itemize}
 
+  \bigskip
   Many of these need tunable parameters. From where?
   \begin{itemize}
     \item \texttt{-march=native -mtune=native}
@@ -973,13 +975,121 @@
 \section{Multi-thread performance}
 % -----------------------------------------------------------------------------
 % {{{
-% Only shared resource: memory hierarchy
-% That's the interesting bit.
-% - False sharing
-%   - demo
-% - NUMA
-%   - NUMA topologies
-%   - NUMA bw demo
+\begin{frame}{Multi-thread performance}
+  \begin{columns}
+    \column{0.7\textwidth}
+
+      Difference to single-thread?
+      \pause
+
+      \bigskip
+      \textbf{Memory System} is (about) the only shared resource.
+
+      \bigskip
+      All `interesting' performance behavior of multiple threads
+      has to do with that.
+    \column{0.3\textwidth}
+      \includegraphics[width=\textwidth]{memory.png}
+  \end{columns}
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{Multiple threads}
+  \begin{center}
+  \Huge Threads v. caches demo
+  \end{center}
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{How about multiple sockets?}
+  \begin{center}
+    \includegraphics[height=5cm]{quad-opteron-numa.png}
+  \end{center}
+  \creditto{arstechnica.com}
+  \uncover<+->{}
+  \uncover<+->{
+    \begin{tikzpicture} [overlay]
+      \node [above left=1cm of current page.south east,draw,drop shadow,fill=white,
+       inner sep=5mm,thick]
+        {
+          ``NUMA''
+        } ;
+    \end{tikzpicture}
+  }
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{NUMA demo}
+  \begin{center}
+  \Huge Contention/throughput demo
+  \end{center}
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}[fragile]{NUMA results}
+  \texttt{`crunchy3'} at Courant
+
+  \medskip
+  \begin{lstlisting}
+    num cpus: 32
+    numa available: 0
+    numa node 0 10001000100010000000000000000000 - 15.9904 GiB
+    numa node 1 00000000000000001000100010001000 - 16 GiB
+    numa node 2 00010001000100010000000000000000 - 16 GiB
+    numa node 3 00000000000000000001000100010001 - 16 GiB
+    numa node 4 00100010001000100000000000000000 - 16 GiB
+    numa node 5 00000000000000000010001000100010 - 16 GiB
+    numa node 6 01000100010001000000000000000000 - 16 GiB
+    numa node 7 00000000000000000100010001000100 - 16 GiB
+  \end{lstlisting}
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}[fragile]{NUMA results}
+  \texttt{`crunchy3'} at Courant
+
+  \medskip
+  \begin{lstlisting}
+    sequential core 0 -> core 0 : BW 4189.87 MB/s
+    sequential core 1 -> core 0 : BW 2409.1 MB/s
+    sequential core 2 -> core 0 : BW 2495.61 MB/s
+    sequential core 3 -> core 0 : BW 2474.62 MB/s
+    sequential core 4 -> core 0 : BW 4244.45 MB/s
+    sequential core 5 -> core 0 : BW 2378.34 MB/s
+    ....
+    sequential core 29 -> core 0 : BW 2048.68 MB/s
+    sequential core 30 -> core 0 : BW 2087.6 MB/s
+    sequential core 31 -> core 0 : BW 2014.68 MB/s
+  \end{lstlisting}
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}[fragile]{NUMA results}
+  \texttt{`crunchy3'} at Courant
+
+  \medskip
+  \begin{lstlisting}
+    all-contention core 0 -> core 0 : BW 1081.85 MB/s
+    all-contention core 1 -> core 0 : BW 299.177 MB/s
+    all-contention core 2 -> core 0 : BW 298.853 MB/s
+    all-contention core 3 -> core 0 : BW 263.735 MB/s
+    all-contention core 4 -> core 0 : BW 1081.93 MB/s
+    all-contention core 5 -> core 0 : BW 299.177 MB/s
+    ....
+    all-contention core 27 -> core 0 : BW 202.49 MB/s
+    all-contention core 28 -> core 0 : BW 434.295 MB/s
+    all-contention core 29 -> core 0 : BW 233.309 MB/s
+    all-contention core 30 -> core 0 : BW 233.169 MB/s
+    all-contention core 31 -> core 0 : BW 202.526 MB/s
+  \end{lstlisting}
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}[fragile]{NUMA results}
+  \texttt{`crunchy3'} at Courant
+
+  \medskip
+  \begin{lstlisting}
+    two-contention core 0 -> core 0 : BW 3306.11 MB/s
+    two-contention core 1 -> core 0 : BW 2199.7 MB/s
+
+    two-contention core 0 -> core 0 : BW 3257.56 MB/s
+    two-contention core 19 -> core 0 : BW 1885.03 MB/s
+  \end{lstlisting}
+\end{frame}
 % }}}
 % -----------------------------------------------------------------------------
 %\section{GPU performance}
