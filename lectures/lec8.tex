@@ -12,7 +12,7 @@
 \begin{document}
 % {{{ front matter
 
-\title{High-Performance Scientific Computing\\Lecture 8: CPU Performance}
+\title{High-Performance Scientific Computing\\Lecture 8: Single-thread Performance}
 
 \date{MATH-GA 2011 / CSCI-GA 2945 $\cdot$ October 24, 2012}
 
@@ -25,7 +25,7 @@
 % -----------------------------------------------------------------------------
 \begin{frame}{Bits and pieces}
   \begin{itemize}
-    \item HW4: \dots
+    \item HW4: tonight / early tomorrow
     \item HW6: due Saturday (ask for ext'n early)
     \item Last homework $\rightarrow$ project work after that
     \item Might issue problem sets for entertainment
@@ -275,15 +275,26 @@
   \medskip
 
   Answer: \uncover<2->{\emph{Make things go faster!}}
-  \medskip
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{Go-fast widgets}
+  All this go-faster technology: \textbf{hard to see}.
 
-  \uncover<3->{
-  \textbf{Goal now:}
+  \bigskip
+  Most of the time: 
+  \begin{itemize}
+    \item program fast,
+    \item programmer happy.
+  \end{itemize}
 
-  Understand sources of slowness, and how they get addressed.
-  \medskip
+  \bigskip
+  Sometimes that's not the case. 
 
-  Remember: \emph{High Performance} Computing
+  \uncover<+->{}
+  \uncover<+->{
+    \bigskip
+    \textbf{Goal now:}
+    Break each widget in an understandable way.
   }
 \end{frame}
 % -----------------------------------------------------------------------------
