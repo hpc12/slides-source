@@ -2,7 +2,48 @@ WAKE UP SLATE
 -------------------------------------------------------------------------------
 Shell scripting demo
 -------------------------------------------------------------------------------
-TODO
+SWITCH TO BASH
+
+Goal: plot timing results from batch of runs
+
+- Simple listing script
+- #!, executable flag
+
+- Comments in scripts
+- output redirection of simple script
+  ---> REALIZE: Interactive shell and script use same set of commands
+
+- subshells
+
+- try and plot
+- (yes, we can make gnuplot understand this data, but-->not the point)
+
+- use variable I, and variable substitution
+  ---> RELATIONSHIP to env vars: export!
+- semicolons for command separation
+
+- outside script: file redirection, read 
+  ---> PIPES DO NOT WORK
+
+- while loops, exit status
+
+- for loop for generation
+
+- command substitution, backticks, $()
+- seq START STEP STOP
+- word separation
+
+- if, test
+  (if data file already exists)
+
+- arithmetic
+
+- for entertainment: fit a parabola
+
+- set -x
+- set -e
+
+
 
 -------------------------------------------------------------------------------
 CL vector demo
@@ -66,3 +107,10 @@ ON CRUNCHY3:
   - compare to zero contention case: that's like single-local
 - all-contention
 - two-contention
+-------------------------------------------------------------------------------
+Lock contention demo
+-------------------------------------------------------------------------------
+- set-governor
+- Run with a single thread
+- Put rate into perspective with sin() -- remove
+- Run with n threads
