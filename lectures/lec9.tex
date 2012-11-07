@@ -25,7 +25,7 @@
 % -----------------------------------------------------------------------------
 \begin{frame}{Bits and pieces}
   \begin{itemize}
-    \item HW5: \dots
+    \item HW5: soon
     \item HW6: due today
     \item Don't have grade reports for HW1\dots5? Talk to me
     \item Don't have a project? Talk to me
@@ -41,15 +41,37 @@
 \end{frame}
 % -----------------------------------------------------------------------------
 \begin{frame}{Shell scripting}
-  \begin{center}
-    \Large
-    All you ever wanted to know about scripting:
+  \Large
+  All you ever wanted to know about scripting:
 
-    \url{http://tldp.org/LDP/abs/html/}
-  \end{center}
+  \begin{itemize}
+    \item \url{http://tldp.org/LDP/abs/html/}
+    \item \texttt{man bash}
+  \end{itemize}
 \end{frame}
 % -----------------------------------------------------------------------------
 \section{Single-thread performance}
+% -----------------------------------------------------------------------------
+\begin{frame}{Recap}
+  Single-thread performance recap:
+  \begin{itemize}
+    \item CPU bits
+      \subitem{Bus, Register File, ALU, Memory Interface, Machine
+      language}
+    \item Memory hierarchy
+      \begin{itemize}
+        \item Latency, bandwidth
+        \item Caches: lines, associativity
+        \item Locality, working set
+      \end{itemize}
+    \item Pipelines
+      \begin{itemize}
+        \item Dependencies
+        \item Branch predictor
+        \item Software pipelining, loop unrolling
+      \end{itemize}
+  \end{itemize}
+\end{frame}
 % -----------------------------------------------------------------------------
 \subsection{How about actually doing work?}
 % -----------------------------------------------------------------------------
@@ -100,7 +122,7 @@
       }
   \end{columns}
   \kayvoncredit
-  \uncover<2>{
+  \uncover<5>{
     \begin{tikzpicture} [overlay]
       \node [above left=1cm of current page.south east,draw,drop shadow,fill=white,
        inner sep=5mm,thick]
@@ -174,7 +196,9 @@
 
           \bigskip
           Almost always more complicated: ``Passes'' include
-          optimizers, etc.
+          optimizers, \dots
+
+          \url{http://llvm.org/demo/}
         } ;
     \end{tikzpicture}
   }
@@ -204,9 +228,13 @@
   \uncover<2->{
     \begin{tikzpicture} [overlay]
       \node [above left=1cm of current page.south east,draw,drop shadow,fill=white,
-       inner sep=5mm,thick]
+       inner sep=5mm,thick, text width=0.5\textwidth]
         {
           Demo
+
+          \only<2->{Registers most effective when data can be reused
+            many times
+          }
         } ;
     \end{tikzpicture}
   }
@@ -217,6 +245,15 @@
   \begin{center}
   \Huge Pointer aliasing demo
   \end{center}
+  \uncover<2->{
+    \begin{tikzpicture} [overlay]
+      \node [above left=1cm of current page.south east,draw,drop shadow,fill=white,
+       inner sep=5mm,thick]
+        {
+          Not the only thing to go wrong with pointers\dots
+        } ;
+    \end{tikzpicture}
+  }
 \end{frame}
 % -----------------------------------------------------------------------------
 \begin{frame}{Alignment}
@@ -412,13 +449,15 @@
   \end{columns}
 \end{frame}
 % -----------------------------------------------------------------------------
+\subsection{Memory-related}
+% -----------------------------------------------------------------------------
 \begin{frame}{Multiple threads}
   \begin{center}
   \Huge Threads v. caches demo
   \end{center}
 \end{frame}
 % -----------------------------------------------------------------------------
-\begin{frame}{How about multiple sockets?}
+\begin{frame}{Multiple sockets?}
   \begin{center}
     \includegraphics[height=5cm]{quad-opteron-numa.png}
   \end{center}
@@ -509,6 +548,23 @@
     two-contention core 19 -> core 0 : BW 1885.03 MB/s
   \end{lstlisting}
 \end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{NUMA? Do I need to care?}
+  Large multi-core machines \emph{are} NUMA.
+
+  \bigskip
+  Also: Easy, can use OpenMP $\rightarrow$ popular
+
+  \bigskip
+  What happens if you ignore NUMA?
+  \begin{itemize}
+    \item What happens at \texttt{malloc}?
+    \item What happens at `first touch'?
+    \item What happens if you don't pin-to-core?
+  \end{itemize}
+\end{frame}
+% -----------------------------------------------------------------------------
+\subsection{Non-memory-related}
 % -----------------------------------------------------------------------------
 \begin{frame}{Recap: superscalar architecture}
   \begin{center}
@@ -621,6 +677,10 @@
 % -----------------------------------------------------------------------------
 \section{GPU performance}
 % -----------------------------------------------------------------------------
+% {{{
+% -----------------------------------------------------------------------------
+\subsection{Less control, more data}
+% -----------------------------------------------------------------------------
 \kayvonframe{Gratuitous Amounts of Parallelism!}{24}{5in 1.45in 10in 6.75in }{}{
   \uncover<2->{
     \begin{tikzpicture} [overlay]
@@ -663,6 +723,8 @@
   \end{center}
 \end{frame}
 % -----------------------------------------------------------------------------
+\subsection{GPUs and Latency}
+% -----------------------------------------------------------------------------
 \begin{frame}{GPUs vs Latency}
   \begin{columns}
     \column{0.6\textwidth}
@@ -687,17 +749,17 @@
     \column{0.4\textwidth}
       \includegraphics[width=\textwidth]{memory.png}
   \end{columns}
-  \uncover<3->{
+  \uncover<2->{
     \begin{tikzpicture} [overlay]
       \node [below right=1cm of current page.north west, draw,drop shadow,fill=white,
       text width=0.6\textwidth, inner sep=5mm,thick]
       {
-        \only<3>{\includegraphics[viewport=6.25in 1in 10.25in 4.75in,clip=true,page=33,width=\textwidth]{kayvon-gpuarch.pdf}}%
+        \only<2-3>{\includegraphics[viewport=6.25in 1in 10.25in 4.75in,clip=true,page=33,width=\textwidth]{kayvon-gpuarch.pdf}}%
         \only<4>{\includegraphics[viewport=6.25in 1in 10.25in 4.75in,clip=true,page=34,width=\textwidth]{kayvon-gpuarch.pdf}}%
       };
     \end{tikzpicture}
   }
-  \uncover<2->{
+  \uncover<3->{
     \begin{tikzpicture} [overlay]
       \node [above left=1cm of current page.south east, draw,drop shadow,fill=white,
       text width=0.4\textwidth, inner sep=5mm,thick]
@@ -721,30 +783,95 @@
 \kayvonframe{Hiding Memory Latency}{37}{0.65in 0.85in 10.4in 6.8in }{}{}
 \kayvonframe{Hiding Memory Latency}{38}{0.65in 0.85in 10.4in 6.8in }{}{}
 
+% -----------------------------------------------------------------------------
+\begin{frame}{Architecture}
+  \begin{center}
+  \Huge GPUs and latency demo
+  \end{center}
+\end{frame}
+% -----------------------------------------------------------------------------
+\subsection{Understanding GPUs}
+% -----------------------------------------------------------------------------
+\begin{frame}{Comparing architectures}
+  \begin{tabular}{l|cccc|l}
+    & GF100 & GF104 & GK104 & GCN & Units\\
+    \hline
+    \# Warps/Wavefronts & 48 & 48 & 64 & 40 \\
+    Warp Size & 32 & 32 & 32 & 64 & W.Item \\
+    \hline
+    SP FLOP/clock & 64 & 96 & 384 & 128 \\
+    Clock & 700 & 650 & 823 & 925 & MHz \\
+    \hline
+    Reg File & 128 & 128 & 256 & 256 & kiB \\
+    Lmem & 64  & 64 & 64 & 64 & kiB \\
+    Lmem BW & 64  & 64 & 128 & 128 & B/clock \\
+    \hline
+  \end{tabular}
+  \creditto{David Kanter / Realworldtech.com}
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{Architecture}
+  \begin{center}
+  \Huge Architecture by the numbers demo
+  \end{center}
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{Architecture}
+  \begin{center}
+  \Huge Occupancy calculator
+  \end{center}
+\end{frame}
+% -----------------------------------------------------------------------------
+\subsection{GPUs and Memory}
+% -----------------------------------------------------------------------------
+\input{parallel-memories}
+\input{cl-gmem-access}
+% -----------------------------------------------------------------------------
+\begin{frame}{GPU Global Memory}
+  \begin{center}
+  \Huge GPU global access patterns demo
+  \end{center}
+\end{frame}
+% -----------------------------------------------------------------------------
+\input{cl-lmem-access}
+% -----------------------------------------------------------------------------
+\begin{frame}{Entertainment: GPU Memory Zoo}
+
+  \uncover<+->{
+    \begin{tabular}{p{5em}cccp{2.8cm}}
+    \hline
+    \textbf{Type} & \textbf{Per} & \textbf{Access} & \textbf{Latency} \\
+    \hline
+    \textbf<2->{private} & work item & R/W & 1 or 1000 \\
+    \textbf<2->{local} & group & R/W & 2 \\
+    \textbf<2->{global} & grid & R/W & 1000 & Cached?\\
+    \texttt{constant} & grid & R/O & 1-1000 & Cached \\
+    image$n$d\_t & grid & R(/W) & 1000 & Spatially cached\\
+    \hline
+    \end{tabular}
+  }
+
+\end{frame}
+% -----------------------------------------------------------------------------
+\subsection{Summary}
+% -----------------------------------------------------------------------------
+\begin{frame}{GPU performance summary}
+\end{frame}
+
+% }}}
+
 % {{{
 
 % TODO:
-% - branch demo
-% 
-% Latency hiding:
-% - Occupancy
-%   - var size register file
-%   - local
-% - ILP
-% 
 % Global mem performance:
 % 
-% - Coalescing
+% - Alignment
 % - Strides
-% - Random access
-% - Latency
-% - Register spilling
 % 
 % Local mem
 % - Banking
-% 
-% Host mem bw
-% Memory zoo
+
+% case study: optimize mat-mat
 
 % }}}
 

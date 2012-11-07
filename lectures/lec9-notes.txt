@@ -1,4 +1,5 @@
-WAKE UP SLATE
+WAKE UP BOX AND SLATE
+prevent-shutdown on each
 -------------------------------------------------------------------------------
 Shell scripting demo
 -------------------------------------------------------------------------------
@@ -23,9 +24,9 @@ Goal: plot timing results from batch of runs
 - semicolons for command separation
 
 - outside script: file redirection, read 
-  ---> PIPES DO NOT WORK
+  ---> PIPES DO NOT WORK, USE TEMP FILE
 
-- while loops, exit status
+- while loops for parsing, exit status
 
 - for loop for generation
 
@@ -43,15 +44,11 @@ Goal: plot timing results from batch of runs
 - set -x
 - set -e
 
-
-
 -------------------------------------------------------------------------------
 CL vector demo
 -------------------------------------------------------------------------------
 - run
-- develop vectorized version
-    vload(i, ary)
-    vstore(val, i, ary)
+- develop vectorized version with float4 pointers
 - bare memory-bound: not that impressive
 - sin(): very impressive ! -> single thread
 - variable sizing
@@ -59,6 +56,19 @@ CL vector demo
 - accessing individual components
 - swizzling
 - select() -> vectorized if
+
+- WARNING about vload/vstore--develop variant
+  vload(i, ary) for *unaligned* loads
+  vstore(val, i, ary)
+-------------------------------------------------------------------------------
+Register spill demo
+-------------------------------------------------------------------------------
+- show (small-working-set) code
+- discuss code--made to have growable working set
+- show assembly
+- grow the working set
+- make
+- show assembly, show spills
 -------------------------------------------------------------------------------
 Pointer aliasing demo
 -------------------------------------------------------------------------------
@@ -82,9 +92,9 @@ On crunchy3:
 False sharing demo
 -------------------------------------------------------------------------------
 ON SLATE:
-- show code
 - set-governor
-- ./run-count3s
+- show code
+- ./run-threads-vs-cache
 - why?!
 - fix it
 - rerun
@@ -99,6 +109,7 @@ ON CRUNCHY3:
 - have to make sure memory is on determined node
   - alternative: "first touch"
 
+- re
 - ./make-on-crunchy
 - show results
 - discuss locality matrix
@@ -113,4 +124,75 @@ Lock contention demo
 - set-governor
 - Run with a single thread
 - Put rate into perspective with sin() -- remove
-- Run with n threads
+- Run with 1,2,3,4,5,...,all threads
+-------------------------------------------------------------------------------
+GPU Branching Demo
+-------------------------------------------------------------------------------
+BOX
+- show code
+- run with 32
+- run with 16 (just comment out cases)
+- comment on how implemented
+- run with 8
+- ...
+- run with 1
+-------------------------------------------------------------------------------
+GPU latency demo
+-------------------------------------------------------------------------------
+BOX:
+- show code
+- shrink work group size
+- EXPLANATION: less latency hiding
+- Use 2x ILP
+  - halve size
+  - halve chunksize
+  - add extra fetch/store
+- Use 4x ILP
+-------------------------------------------------------------------------------
+Arch understanding demo
+-------------------------------------------------------------------------------
+- What the hell is a warp?
+- Why is the size of the register file given in kiB?
+
+- mem bw
+  bus bits * bus clock /1e3 / 8
+
+-  flops per core, per clock
+  fpus * 2
+
+- flop rate [gflops]
+  cores * core clock * fpus * 2 * 1e6 / 1e9
+
+- how many scheduling slots per core?
+  warp size * (# warps/core)
+
+- how many scheduling slots total?
+  * cores
+  -> and that's just what the hardware does!
+
+- how much register file per work item?
+  -> "I'm going to make a mistake."
+  reg file * 1024 / # fpus
+
+  correct:
+  reg file * 1024 / # work items
+
+- smem bw / WHAT?
+  -> FLOP!
+
+  lmem bw / (#fpus * 2)
+
+- gmem bw / flop?
+
+  (gmem bw *1e9) / (#cores) / (core clock *1e6) / (#fpus * 2)
+-------------------------------------------------------------------------------
+Occupancy calculator demo
+-------------------------------------------------------------------------------
+Use gnumeric
+- grow work group size up to 256
+- observe: occupancy increases
+- then increase lmem to 16384
+- observe: occupancy drops
+
+- Is occupancy absolutely necessary?
+  (No. ILP can be just as good. But you pay with space in the reg.file.)
