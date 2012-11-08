@@ -1,9 +1,3 @@
-Multithread performance:
-- Cache coherency protocols/snooping
-  - False sharing
-- NUMA
-
-- SIMD on CPU
 - MPI Performance
 
 Parallel languages worth knowing about:
@@ -11,7 +5,3 @@ Parallel languages worth knowing about:
 - ispc
 - cilk
 
-Tools of the week:
-
-- GNU software installation
-- Shell scripting
