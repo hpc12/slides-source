@@ -1,4 +1,159 @@
 -------------------------------------------------------------------------------
+sysprof demo
+-------------------------------------------------------------------------------
+- show UI
+- just hit start / profile
+- show sample counter
+- no influence on rate
+- clear, explain clear
+- useful idea--will encounter another profiler like that
+
+- set-governor
+- cd fish
+- mpiexec -n 4 ./fish <nfish> <vis_int> <nsteps>
+- mpiexec -n 4 ./fish 1,000,000 0 30
+
+- How does it know callers/callees?
+- Switch to -g
+- Explain conflict
+
+- Re-mpiexec -n 4 ./fish 1,000,000 0 30
+- Not a big difference in run time. Why? (mem bound)
+- Self, cumulative times
+
+- Trustworthiness of low-sample-count data
+
+- Now know *where* time is spent. Don't quite yet know *how*.
+-------------------------------------------------------------------------------
+callgrind demo
+-------------------------------------------------------------------------------
+- mpiexec -n 4 valgrind --tool=callgrind ./fish 1,000,000 1 30
+- SLOOOOOOW!
+
+- That's valgrind.
+
+- mpiexec -n 4 valgrind --tool=callgrind ./fish 100,000 1 30
+- look at output files
+
+- run kcachegrind
+- check measurements for moveFish, outputFish, countFish
+  -> observations?
+  -> why?
+  -> which is 'real'?
+  -> "wer misst, misst mist."
+
+CALL TREE for moveFish:
+- point out call counts, percentages
+
+CALLEE MAP for moveFish:
+- different visualization, same facts
+
+SOURCE CODE for moveFish:
+- color coding of calls
+- timing on if check
+
+SELF AND CUMULATIVE again:
+- how to deal with recursion?
+- point out "<cycle 1>"
+- where was "<cycle 1>" in the callee map of moveFish?
+- Right clickable call graph!
+-------------------------------------------------------------------------------
+Callgrind with caches demo:
+-------------------------------------------------------------------------------
+mpiexec -n 4 valgrind --tool=callgrind \
+  --I1=32768,8,64 --D1=32768,8,64 --LL=262144,8,64 ./fish 100000 1 30
+   (size in bytes, associativity, line size)
+
+- point out choices
+- pick "instruction fetch"
+- pick "cycle estimation" -> still doesn't get real values
+- pick "data read access"
+- pick "L1 Data read miss"
+
+-> source code of moveFish
+
+- but really, countFish is disproportionate
+
+-> source code of countFish
+
+- Comments on HW5:
+
+-> 95% of you who had the CS reflex: linked lists! O(1) insertion
+  - Boom, wrong. Have had a good run, no more.
+
+- Send fish one by one?
+  - Good reason I didn't use your program to demonstrate with 1e6 fish
+  - And what are a million fish, anyway?
+  - Room for 100M in my laptop, without breaking a sweat
+
+- Idiom: request array
+  - Overrunning that?
+  - Particularly effective: One fish per request
+
+- back on topic: caches are important
+- callgrind delivers exact data, slowly
+-------------------------------------------------------------------------------
+Perf demo
+-------------------------------------------------------------------------------
+- all of the above work in the VM, this one will not
+- BUT: The extra speed and capabilities are totally worth it
+
+- perf top
+- point out sample count and event count
+
+- perf list
+
+- perf top -e 'instructions'
+
+- response to "yes > /dev/null"
+
+- perf record mpiexec -n 4 ./fish 1000000 1 50
+- point out data file
+
+PERF REPORT
+- note how all mixed together
+- hit enter on first entry
+- What's a DSO?
+- Zoom into thread
+
+- annotate countFish
+- move around
+- follow jumps
+- pick out bad instruction!
+
+-> OF COURSE: Works less well without -g
+
+-> REMARK: Possible to control sampling frequency
+
+CALL GRAPHS:
+
+- perf record -g mpiexec -n 4 ./fish 1000000 1 50
+- callee or caller information?
+- Expand caller info on countFish
+
+MULTIPLE EVENTS:
+
+- perf record -e instructions,cycles -g mpiexec -n 4 ./fish 1000000 1 50
+- perf report
+- perf report -n
+- observe that sample counts make no sense!
+-> perf is smart behind your back and adjusts the sample rate to ~1000/s
+   fixes stuff up in visualization
+
+- perf record -e instructions,cycles -c 100,000 -g mpiexec -n 4 ./fish 1000000 1 50
+
+-> allows us to obtain meaningful ratios!
+
+BACK TO SLIDES
+
+- show intel arch manual
+- find sandy bridge
+- find branch misprediction
+- perf record -e instructions,rc189 -c 10000 ./branch-mispredict
+
+- show intel opt manual
+- Appendix B.6
+-------------------------------------------------------------------------------
 False sharing demo
 -------------------------------------------------------------------------------
 ON SLATE:

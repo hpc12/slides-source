@@ -12,9 +12,9 @@
 \begin{document}
 % {{{ front matter
 
-\title{High-Performance Scientific Computing\\Lecture 9: Parallel Performance}
+\title{High-Performance Scientific Computing\\Lecture 10: Parallel Performance}
 
-\date{MATH-GA 2011 / CSCI-GA 2945 $\cdot$ October 24, 2012}
+\date{MATH-GA 2011 / CSCI-GA 2945 $\cdot$ November 14, 2012}
 
 \frame{\titlepage}
 
@@ -23,6 +23,7 @@
 \end{frame}
 % }}}
 % -----------------------------------------------------------------------------
+\begin{comment}
 \begin{frame}{Bits and pieces}
   \begin{itemize}
     \item Don't have a project? Let's fix that \emph{very soon}
@@ -34,24 +35,163 @@
     \item Don't have grade reports for HW1\dots4? Talk to me
   \end{itemize}
 \end{frame}
+\end{comment}
 % -----------------------------------------------------------------------------
-\section[Software]{Tool of the day: Shell scripting}
+\section[Profilers]{Tool of the day: Profilers}
 % -----------------------------------------------------------------------------
-\begin{frame}{Shell scripting}
+% {{{
+\begin{frame}{Profilers}
+  \begin{columns}
+    \column{0.7\textwidth}
+      Slow program execution:
+      \begin{itemize}
+        \item Poor memory access pattern
+        \item Expensive processing 
+
+        (e.g. division, transcendental functions)
+        \item Control overhead (branches, function calls)
+      \end{itemize}
+      \textbf{Desired Insight:}
+      \begin{itemize}
+        \item \emph{Where is time spent?} (Source code location)
+        \item \emph{When?} (Execution History)
+          \subitem{Call stack}
+        \item \emph{What} is the limiting factor?
+      \end{itemize}
+
+      \textbf{Main Types of Profilers:}
+      \begin{itemize}
+        \item Exact, Sampling
+        \item Hardware, Software
+      \end{itemize}
+    \column{0.3\textwidth}
+      \includegraphics[width=\textwidth]{clock.jpeg}
+  \end{columns}
+\end{frame}
+\addimgcredit{Clock: sxc.hu/cema}
+
+\begin{frame}{Reflections on Profilers}
+  \begin{center}
+    \begin{tabular}{l|l}
+      Sampling & Exact \\
+      \hline
+      \plusball Fast & \minusball Slow \\
+      \minusball Noisy & \plusball Exact \\
+      (takes time to converge!) \\
+    \end{tabular}
+
+    \bigskip
+    No free lunch. But: No exact machine-level profiler!
+  \end{center}
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{Various profilers}
+  List of profilers:
+  \begin{itemize}
+    \item Gprof: sampling, software, single-program
+    \item Sysprof: sampling, software, system-wide
+    \item Valgrind: exact, `hardware', single-program
+      \subitem{callgrind, cachegrind, really}
+    \item Perf: sampling, hardware, system-wide
+  \end{itemize}
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{Profilers}
   \begin{center}
   \Huge Demo time
   \end{center}
 \end{frame}
 % -----------------------------------------------------------------------------
-\begin{frame}{Shell scripting}
-  \Large
-  All you ever wanted to know about scripting:
+\begin{frame}{Making sense of Perf sample counts}
+  \begin{columns}
+    \column{0.8\textwidth}
+      What do Perf sample counts mean?
 
-  \begin{itemize}
-    \item \url{http://tldp.org/LDP/abs/html/}
-    \item \texttt{man bash}
-  \end{itemize}
+      \bigskip
+      Individually: not much!\\
+      \hfill $\rightarrow$ Ratios make sense!
+
+      \bigskip
+      What kind of ratios?
+
+      \begin{itemize}
+        \item (Events in Routine 1)/(Events in Routine 2)
+        \item (Events in Line 1)/(Events in Line 2)
+        \item (Count of Event 1 in X)/(Count of Event 2 in X)
+      \end{itemize}
+
+      \bigskip
+      \textbf{Always ask:} Sample count sufficiently converged?
+    \column{0.3\textwidth}
+      \includegraphics[width=\textwidth]{bar-chart.png}
+  \end{columns}
 \end{frame}
+\addimgcredit{Bar chart: sxc.hu/miamiamia}
+% -----------------------------------------------------------------------------
+\begin{frame}{Perf: Examples I}
+  \begin{itemize}
+    \item \textbf{instructions / cycles}
+
+      \medskip
+      Instructions per clock, target $>1$ (seen)
+
+    \item \textbf{L1-dcache-load-misses / instructions}
+
+      \medskip
+      L1 miss rate, target: small, location understood (demo)
+
+    \item \textbf{LLC-load-misses / instructions}
+
+      \medskip
+      L2 miss rate, target: small
+
+    \item \textbf{stalled-cycles-frontend / cycles}
+
+      \medskip
+      Instruction fetch stalls. Should never happen--means CPU could
+      not predict where code is going. ($\rightarrow$ pipeline stall)
+
+    \item \textbf{stalled-cycles-backend / cycles}
+
+      \medskip
+      Execution is waiting for data/computation/\dots
+  \end{itemize}
+  \uncover<+->{}
+  \uncover<+->{
+    \begin{tikzpicture} [overlay]
+      \node [above left=1cm of current page.south east,draw,drop shadow,fill=white,
+       inner sep=5mm,thick, text width=0.5\textwidth]
+        {
+          Good news: That's likely all you'll ever need.
+
+          \only<+->{
+            \bigskip
+            But the rabbit hole goes deeper. :)
+          }
+        } ;
+    \end{tikzpicture}
+  }
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{Learning about PMU events}
+  \begin{itemize}
+    \item \weblink{http://www.intel.com/content/dam/doc/manual/64-ia-32-architectures-optimization-manual.pdf}{Intel Optimization Manual} (no.)
+      \subitem{\weblink{http://www.intel.com/content/www/us/en/architecture-and-technology/64-ia-32-architectures-software-developer-vol-3b-part-2-manual.html}{Intel® 64 and IA-32 Architectures Developer's Manual: Vol. 3B} (yes!)
+      }
+    \item \weblink{http://support.amd.com/us/Processor_TechDocs/47414_15h_sw_opt_guide.pdf}{AMD Optimization Manual} (no.)
+      \subitem{\weblink{http://support.amd.com/us/Processor_TechDocs/42301_15h_Mod_00h-0Fh_BKDG.pdf}{AMD BIOS and Kernel Developers' guide for Family 15h processors} (yes!)
+      }
+  \end{itemize}
+
+  Also contain advice on what ratios to use.
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{perf}
+  \begin{center}
+  \Huge Perf low-level hw event demo
+  \end{center}
+\end{frame}
+% }}}
 % -----------------------------------------------------------------------------
 \section{Multi-thread performance}
 % -----------------------------------------------------------------------------
@@ -80,6 +220,53 @@
   \begin{center}
   \Huge Threads v. caches demo
   \end{center}
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{Cache coherency}
+  \emph{Example:} ``MOESI'' protocol (e.g. AMD). A cache line holds\dots
+  \bigskip
+  \begin{description}
+    \item [Modified] most recent correct copy, memory stale.
+      No other copies.
+    \item [Owned] most recent, correct copy. Other CPUs may
+      hold copy in S state.
+      Responsible for updating (possibly stale) memory on evict.
+
+    \item [Exclusive] most recent, correct copy,
+      memory fresh. No other copies.
+    \item [Shared] most recent, correct copy. Other CPUs may
+      hold copies in O and S state. Memory may be stale.
+    \item [Invalid] no valid copy of the data.
+  \end{description}
+  \uncover<+->{}
+  \uncover<+->{
+    \begin{tikzpicture} [overlay]
+      \node [above left=1cm of current page.south east,draw,drop shadow,fill=white,
+       inner sep=5mm,thick, text width=0.7\textwidth]
+        {
+          What states are safe to write? (in my and someone else's
+          cache)
+
+          \only<+->{
+            \bigskip
+            (and transitions to what state?)
+          }
+
+          \only<+->{
+            \bigskip
+            What states did the \texttt{sums} array see?
+          }
+
+          \only<+->{
+            \bigskip
+            How do memory fences fit into this picture?
+            \only<+->{
+              None of this is instantaneous $\rightarrow$ queued!
+            }
+          }
+        } ;
+    \end{tikzpicture}
+  }
 \end{frame}
 % -----------------------------------------------------------------------------
 \begin{frame}{Multiple sockets?}
@@ -525,7 +712,7 @@
 
 % }}}
 \questionframe{}
-%\imagecreditslide
+\imagecreditslide
 
 \end{document}
 % vim: foldmethod=marker
