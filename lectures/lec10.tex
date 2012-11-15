@@ -37,6 +37,14 @@
 \end{frame}
 \end{comment}
 % -----------------------------------------------------------------------------
+\section[Phi]{Recent news}
+% -----------------------------------------------------------------------------
+\begin{frame}{Xeon Phi}
+  \begin{center}
+    \includegraphics[height=7cm]{xeon-phi-die-shot.jpeg}
+  \end{center}
+\end{frame}
+% -----------------------------------------------------------------------------
 \section[Profilers]{Tool of the day: Profilers}
 % -----------------------------------------------------------------------------
 % {{{
@@ -128,7 +136,7 @@
 \end{frame}
 \addimgcredit{Bar chart: sxc.hu/miamiamia}
 % -----------------------------------------------------------------------------
-\begin{frame}{Perf: Examples I}
+\begin{frame}{Perf: Examples}
   \begin{itemize}
     \item \textbf{instructions / cycles}
 
@@ -154,23 +162,26 @@
     \item \textbf{stalled-cycles-backend / cycles}
 
       \medskip
-      Execution is waiting for data/computation/\dots
+      Execution units (ALU/FPU/Load-store) is waiting for data/computation/\dots
   \end{itemize}
   \uncover<+->{}
   \uncover<+->{
     \begin{tikzpicture} [overlay]
       \node [above left=1cm of current page.south east,draw,drop shadow,fill=white,
-       inner sep=5mm,thick, text width=0.5\textwidth]
+       inner sep=5mm,thick, text width=0.6\textwidth]
         {
-          Good news: That's likely all you'll ever need.
-
-          \only<+->{
-            \bigskip
-            But the rabbit hole goes deeper. :)
-          }
+          Front end? Back end?
         } ;
     \end{tikzpicture}
   }
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{Front end and Back end}
+  \begin{center}
+  \includegraphics[height=0.85\textheight]{sandy-bridge-pipeline.png}
+  \end{center}
+
+  \creditto{David Kanter / Realworldtech.com}
 \end{frame}
 % -----------------------------------------------------------------------------
 \begin{frame}{Learning about PMU events}
@@ -183,7 +194,10 @@
       }
   \end{itemize}
 
-  Also contain advice on what ratios to use.
+  Latter contain event descriptions.
+
+  \medskip
+  Former contain advice on what ratios to use.
 \end{frame}
 % -----------------------------------------------------------------------------
 \begin{frame}{perf}
@@ -486,235 +500,9 @@
 
 
 % }}}
-% -----------------------------------------------------------------------------
-\section{GPU performance}
-% -----------------------------------------------------------------------------
-% {{{
-% -----------------------------------------------------------------------------
-\subsection{Less control, more data}
-% -----------------------------------------------------------------------------
-\newcommand{\kayvoncredit}{
-  \begin{tikzpicture}[overlay]
-    \node [xshift=1cm,yshift=0.5cm]
-      at (current page.south west)
-      [font=\scriptsize,fill=gray!30,anchor=south west,opacity=0.5]
-      {Credit: Kayvon Fatahalian (Stanford) };
-  \end{tikzpicture}
-}
-\newcommand{\kayvonframe}[5]{
 
-  \begin{frame}{#1}
-    #4
-    \begin{center}
-    \includegraphics[viewport=#3,clip=true,page=#2,height=0.7\textheight]{kayvon-gpuarch.pdf}
-    \end{center}
-    \kayvoncredit
-    #5
-  \end{frame}
-}
-\kayvonframe{Gratuitous Amounts of Parallelism!}{24}{5in 1.45in 10in 6.75in }{}{
-  \uncover<2->{
-    \begin{tikzpicture} [overlay]
-      \node [below right=1.75cm of current page.north west, draw,drop shadow,fill=white,
-      text width=0.8\textwidth, inner sep=2.5mm,thick]
-        {
-          Example:
-
-          \medskip
-          128 instruction streams in parallel
-
-          16 independent groups of 8 synchronized streams
-        } ;
-    \end{tikzpicture}
-  }
-  \uncover<3>{
-    \begin{tikzpicture} [overlay]
-      \node [above left=1cm of current page.south east, draw,drop shadow,fill=white,
-      text width=0.6\textwidth, inner xsep=0.5cm,inner ysep=0.5cm,thick]
-        {
-          Great if everybody in a group does the same thing.
-
-          \medskip
-          But what if not?
-
-          \medskip
-          What leads to divergent instruction streams?
-        } ;
-    \end{tikzpicture}
-  }
-}
-\kayvonframe{Branches}{26}{0.85in 0.9in 10.5in 6.8in }{}{}
-\kayvonframe{Branches}{27}{0.85in 0.9in 10.5in 6.8in }{}{}
-\kayvonframe{Branches}{28}{0.85in 0.9in 10.5in 6.8in }{}{}
-\kayvonframe{Branches}{29}{0.85in 0.9in 10.5in 6.8in }{}{}
-% -----------------------------------------------------------------------------
-\begin{frame}{GPUs vs Branching}
-  \begin{center}
-  \Huge Branch demo time
-  \end{center}
-\end{frame}
-% -----------------------------------------------------------------------------
-\subsection{GPUs and Latency}
-% -----------------------------------------------------------------------------
-\begin{frame}{GPUs vs Latency}
-  \begin{columns}
-    \column{0.6\textwidth}
-      \begin{block}{Problem}
-        Memory still has very high latency\dots
-
-        \dots as do many other things\dots
-
-        \dots but we've removed most of the hardware that helps us
-        deal with that.
-
-      \end{block}
-      \medskip
-      We've removed
-      \begin{itemize}
-      \item caches
-      \item branch prediction
-      \item out-of-order execution
-      \end{itemize}
-
-      So what now?
-    \column{0.4\textwidth}
-      \includegraphics[width=\textwidth]{memory.png}
-  \end{columns}
-  \uncover<2->{
-    \begin{tikzpicture} [overlay]
-      \node [below right=1cm of current page.north west, draw,drop shadow,fill=white,
-      text width=0.6\textwidth, inner sep=5mm,thick]
-      {
-        \only<2-3>{\includegraphics[viewport=6.25in 1in 10.25in 4.75in,clip=true,page=33,width=\textwidth]{kayvon-gpuarch.pdf}}%
-        \only<4>{\includegraphics[viewport=6.25in 1in 10.25in 4.75in,clip=true,page=34,width=\textwidth]{kayvon-gpuarch.pdf}}%
-      };
-    \end{tikzpicture}
-  }
-  \uncover<3->{
-    \begin{tikzpicture} [overlay]
-      \node [above left=1cm of current page.south east, draw,drop shadow,fill=white,
-      text width=0.4\textwidth, inner sep=5mm,thick]
-      {
-        \textbf{Idea \#3}
-
-        \medskip
-        \begin{tabular}{rl}
-        & Even more parallelism \\ + &Some extra memory \\ \hline = &A solution!
-        \end{tabular}
-
-      };
-    \end{tikzpicture}
-  }
-\end{frame}
-
-\kayvonframe{Hiding Memory Latency}{33}{0.65in 0.85in 10.4in 6.8in }{}{}
-\kayvonframe{Hiding Memory Latency}{34}{0.65in 0.85in 10.4in 6.8in }{}{}
-\kayvonframe{Hiding Memory Latency}{35}{0.65in 0.85in 10.4in 6.8in }{}{}
-\kayvonframe{Hiding Memory Latency}{36}{0.65in 0.85in 10.4in 6.8in }{}{}
-\kayvonframe{Hiding Memory Latency}{37}{0.65in 0.85in 10.4in 6.8in }{}{}
-\kayvonframe{Hiding Memory Latency}{38}{0.65in 0.85in 10.4in 6.8in }{}{}
-
-% -----------------------------------------------------------------------------
-\begin{frame}{Architecture}
-  \begin{center}
-  \Huge GPUs and latency demo
-  \end{center}
-\end{frame}
-% -----------------------------------------------------------------------------
-\subsection{Understanding GPUs}
-% -----------------------------------------------------------------------------
-\begin{frame}{Comparing architectures}
-  \begin{tabular}{l|cccc|l}
-    & GF100 & GF104 & GK104 & GCN & Units\\
-    \hline
-    \# Warps/Wavefronts & 48 & 48 & 64 & 40 \\
-    Warp Size & 32 & 32 & 32 & 64 & W.Item \\
-    \hline
-    SP FLOP/clock & 64 & 96 & 384 & 128 \\
-    Clock & 700 & 650 & 823 & 925 & MHz \\
-    \hline
-    Reg File & 128 & 128 & 256 & 256 & kiB \\
-    Lmem & 64  & 64 & 64 & 64 & kiB \\
-    Lmem BW & 64  & 64 & 128 & 128 & B/clock \\
-    \hline
-  \end{tabular}
-  \creditto{David Kanter / Realworldtech.com}
-\end{frame}
-% -----------------------------------------------------------------------------
-\begin{frame}{Architecture}
-  \begin{center}
-  \Huge Architecture by the numbers demo
-  \end{center}
-\end{frame}
-% -----------------------------------------------------------------------------
-\begin{frame}{Architecture}
-  \begin{center}
-  \Huge Occupancy calculator
-  \end{center}
-\end{frame}
-% -----------------------------------------------------------------------------
-\subsection{GPUs and Memory}
-% -----------------------------------------------------------------------------
-\input{parallel-memories}
-\input{cl-gmem-access}
-% -----------------------------------------------------------------------------
-\begin{frame}{GPU Global Memory}
-  \begin{center}
-  \Huge GPU global access patterns demo
-  \end{center}
-\end{frame}
-% -----------------------------------------------------------------------------
-\input{cl-lmem-access}
-% -----------------------------------------------------------------------------
-\begin{frame}{GPU local Memory}
-  \begin{center}
-  \Huge GPU local access patterns demo
-  \end{center}
-\end{frame}
-% -----------------------------------------------------------------------------
-\begin{frame}{Entertainment: GPU Memory Zoo}
-
-  \uncover<+->{
-    \begin{tabular}{p{5em}cccp{2.8cm}}
-    \hline
-    \textbf{Type} & \textbf{Per} & \textbf{Access} & \textbf{Latency} \\
-    \hline
-    \textbf<2->{private} & work item & R/W & 1 or 1000 \\
-    \textbf<2->{local} & group & R/W & 2 \\
-    \textbf<2->{global} & grid & R/W & 1000 & Cached?\\
-    \texttt{constant} & grid & R/O & 1-1000 & Cached \\
-    image$n$d\_t & grid & R(/W) & 1000 & Spatially cached\\
-    \hline
-    \end{tabular}
-  }
-
-\end{frame}
-% -----------------------------------------------------------------------------
-\subsection{Summary}
-% -----------------------------------------------------------------------------
-\begin{frame}{GPU performance summary}
-\end{frame}
-
-% }}}
-
-% {{{
-
-% TODO:
-% Global mem performance:
-% 
-% - Alignment
-% - Strides
-% 
-% Local mem
-% - Banking
-
-% case study: optimize mat-mat
-
-% }}}
 \questionframe{}
 \imagecreditslide
 
 \end{document}
 % vim: foldmethod=marker
-
-
