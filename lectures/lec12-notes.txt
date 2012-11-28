@@ -120,5 +120,29 @@ LATENCY:
   on-host
   on-host tcp
   off-host
+-------------------------------------------------------------------------------
+Spectral partition demo
+-------------------------------------------------------------------------------
+- re
+- python spectral-partitioning.py
+- Zoom into DC area
+- move epicenter to NY (or so)
+- Observe that communication graph may be different
 
+- flip switch
+- point out zero eigenvalue, say that we skip it
+- show modes
+- move epicenter near line
+- make it heavier?
 
+- great partitions
+- very expensive
+- how to compute, if original problem was so big we needed a partition 
+  in the first place--that we don't have?
+- want more than 2 parts?
+-------------------------------------------------------------------------------
+metis partition demo
+-------------------------------------------------------------------------------
+- run
+- dial up number of parts
+- switch on weights

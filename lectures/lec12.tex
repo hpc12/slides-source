@@ -22,9 +22,9 @@
 \begin{document}
 % {{{ front matter
 
-\title{High-Performance Scientific Computing\\Lecture 11: GPU Performance, Applications}
+\title{High-Performance Scientific Computing\\Lecture 12: GPU Performance, Applications}
 
-\date{MATH-GA 2011 / CSCI-GA 2945 $\cdot$ November 21, 2012}
+\date{MATH-GA 2011 / CSCI-GA 2945 $\cdot$ November 27, 2012}
 
 \frame{\titlepage}
 
@@ -47,18 +47,6 @@
 \end{frame}
 \end{comment}
 
-\begin{comment}
-% -----------------------------------------------------------------------------
-\section[Version Control]{Tool of the day: Advanced Version Control}
-% -----------------------------------------------------------------------------
-% {{{
-\begin{frame}{Git tricks}
-  \begin{center}
-  \Huge Version control demo time
-  \end{center}
-\end{frame}
-% }}}
-\end{comment}
 % -----------------------------------------------------------------------------
 \section{GPU performance}
 % -----------------------------------------------------------------------------
@@ -66,34 +54,64 @@
 % -----------------------------------------------------------------------------
 \subsection{Understanding GPUs}
 % -----------------------------------------------------------------------------
+\begin{frame}{Recap}
+  \begin{itemize}[<+->]
+    \item SIMD performance impact?
+    \item How can GPU code deal with latency?
+    \item Difference: \# FPUs / \# scheduling slots?
+  \end{itemize}
+\end{frame}
+% -----------------------------------------------------------------------------
 \begin{frame}{Comparing architectures}
   \begin{tabular}{l|cccc|l}
+    & Nvidia & Nvidia & Nvidia & AMD & Units\\
     & GF100 & GF104 & GK104 & GCN & Units\\
     \hline
-    \# Warps/Wavefronts & 48 & 48 & 64 & 40 \\
+    \# Warps/core & 48 & 48 & 64 & 40\\
     Warp Size & 32 & 32 & 32 & 64 & W.Item \\
+    SP FPUs/core & 32 & 48 & 192 & 64 \\
+    Cores & 15 & 7 & 8 & 32 \\
     \hline
-    SP FLOP/clock & 64 & 96 & 384 & 128 \\
-    Clock & 700 & 650 & 823 & 925 & MHz \\
+    Core clock & 1400 & 1300 & 823 & 925 & MHz \\
     \hline
     Reg File & 128 & 128 & 256 & 256 & kiB \\
-    Lmem & 64  & 64 & 64 & 64 & kiB \\
-    Lmem BW & 64  & 64 & 128 & 128 & B/clock \\
+    Lmem/core & 64  & 64 & 64 & 64 & kiB \\
+    Lmem BW/core & 64  & 64 & 128 & 128 & B/clock \\
+    \hline
+    GMem Bus & 384 & 256 & 256 & 384 & Bits\\
+    GMem Clock & 3696 & 3600 & 6008 & 5500 & MHz\\
     \hline
   \end{tabular}
   \creditto{David Kanter / Realworldtech.com}
+  \uncover<+->{}
+  \uncover<+->{
+    \begin{tikzpicture} [overlay]
+      \node [above left=1cm of current page.south east,draw,drop shadow,fill=white,
+       inner sep=5mm,thick,text width=0.6\textwidth]
+        {
+          What are the main limits for programs?
+
+          \bigskip
+          What happens if you exceed them?
+        } ;
+    \end{tikzpicture}
+  }
 \end{frame}
 % -----------------------------------------------------------------------------
 \begin{frame}{Architecture}
   \begin{center}
-  \Huge Architecture by the numbers demo
+    \Huge Occupancy calculator
   \end{center}
 \end{frame}
 % -----------------------------------------------------------------------------
-\begin{frame}{Architecture}
+\begin{frame}{Performance in three sentences}
   \begin{center}
-  \Huge Occupancy calculator
+    \Large
+    Flops are cheap\\
+    Bandwidth is money\\
+    Latency is physics
   \end{center}
+  \hfill [M. Hoemmen]
 \end{frame}
 % -----------------------------------------------------------------------------
 \subsection{GPUs and Memory}
@@ -213,6 +231,38 @@
   }
   \end{frame}
 }
+% -----------------------------------------------------------------------------
+\begin{frame}{Too little memory?}
+  \begin{center}
+    \Large
+    Efficient code organization for out-of-core calculations?
+  \end{center}
+
+  \bigskip
+  \textbf{Assume:} $\leftarrow$, $\rightarrow$ transfers, computation all
+  proceed independently.
+
+  \pause
+
+  \begin{center}
+    \Large
+    ``Double buffering''
+  \end{center}
+
+  \emph{Idea:} Just keep everybody busy.
+
+  \uncover<+->{}
+  \uncover<+->{
+    \begin{tikzpicture} [overlay]
+      \node [above left=1cm of current page.south east,draw,drop shadow,fill=white,
+       inner sep=5mm,thick,text width=0.6\textwidth]
+        {
+          Q: Describe that in OpenCL without synchronizing the host to
+          the GPU.
+        } ;
+    \end{tikzpicture}
+  }
+\end{frame}
 % -----------------------------------------------------------------------------
 \begin{frame}{Entertainment: GPU Memory Zoo}
 
@@ -392,8 +442,6 @@
         \item Encryption, Compression
 
           (after blocking)
-        \item Software compilation
-          \subitem{\texttt{make -j8}}
       \end{itemize}
     \column{0.4\textwidth}
       \includegraphics[width=\textwidth]{parallel-field.jpeg}
@@ -419,35 +467,6 @@
     \item MPI: Larger than \# ranks?
     \item GPU?
   \end{itemize}
-\end{frame}
-% -----------------------------------------------------------------------------
-\begin{frame}{Mother-Child Parallelism}
-  Mother-Child parallelism:
-
-  \bigskip
-  \begin{center}
-  \begin{tikzpicture}
-    \draw [rounded corners=0.5cm,thick,fill=intermed]
-      (-0.5,2.5) rectangle (0.5,-2.5) ;
-    \node [rotate=90] {Mother};
-
-    \draw [func] (0,3) -- (0,2.5);
-    \foreach \i in {0,...,4}
-    {
-      \node [circle,thick,fill=intermed,draw,thick,minimum height=1cm]
-        (c\i) at (1.5+\i*1.5,0) {\i} ;
-      \draw [func] (0,2) ..controls +(1.5,0) and +(0,1.5) .. (c\i);
-      \draw [func] (c\i) ..controls +(0,-1.5) and +(1.5,0) .. (0,-2);
-    }
-    \node at(8.5,0) [rotate=90] {Children};
-    \draw [func] (0,-2.5) -- (0,-3) ;
-    \node at (2,2.5) [anchor=west] {Send initial data} ;
-    \node at (2,-2.5) [anchor=west] {Collect results} ;
-  \end{tikzpicture}
-  \end{center}
-
-  \bigskip
-  (formerly called ``Master-Slave'')
 \end{frame}
 % -----------------------------------------------------------------------------
 \begin{frame}{Embarrassingly Parallel: Issues}
@@ -480,6 +499,35 @@
         } ;
     \end{tikzpicture}
   }
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{Mother-Child Parallelism}
+  Mother-Child parallelism:
+
+  \bigskip
+  \begin{center}
+  \begin{tikzpicture}
+    \draw [rounded corners=0.5cm,thick,fill=intermed]
+      (-0.5,2.5) rectangle (0.5,-2.5) ;
+    \node [rotate=90] {Mother};
+
+    \draw [func] (0,3) -- (0,2.5);
+    \foreach \i in {0,...,4}
+    {
+      \node [circle,thick,fill=intermed,draw,thick,minimum height=1cm]
+        (c\i) at (1.5+\i*1.5,0) {\i} ;
+      \draw [func] (0,2) ..controls +(1.5,0) and +(0,1.5) .. (c\i);
+      \draw [func] (c\i) ..controls +(0,-1.5) and +(1.5,0) .. (0,-2);
+    }
+    \node at(8.5,0) [rotate=90] {Children};
+    \draw [func] (0,-2.5) -- (0,-3) ;
+    \node at (2,2.5) [anchor=west] {Send initial data} ;
+    \node at (2,-2.5) [anchor=west] {Collect results} ;
+  \end{tikzpicture}
+  \end{center}
+
+  \bigskip
+  (formerly called ``Master-Slave'')
 \end{frame}
 % }}}
 % -----------------------------------------------------------------------------
@@ -614,17 +662,17 @@
       \includegraphics[width=\textwidth]{question-mark.png}
     \column{0.6\textwidth}
       \begin{itemize}
-        \item Only useful when the computation is mainly local
-          \subitem{Responsibility for updating one datum
-            rests with one processor}
-        \item Synchronization, Deadlock, Livelock, \dots
+        \item Same computation often repeated many times
           \begin{itemize}
-            \item Performance Impact
-            \item Granularity
+            \item As time steps in a simulation
+            \item Until `convergence'
           \end{itemize}
-        \item Load Balancing: Thorny issue
-          \subitem{$\rightarrow$ next lecture}
-        \item Regularity of the Partition?
+        \item $\to$ Synchronization?
+        \item Main structures: Array (image, grid), Graph (mesh)
+        \item Performance impact of partition?
+        \item Granularity?
+        \item Only useful when the computation is mainly local
+        \item Load Balancing: Thorny issue (next)
       \end{itemize}
   \end{columns}
 \end{frame}
@@ -676,27 +724,197 @@
   \end{columns}
 \end{frame}
 % -----------------------------------------------------------------------------
-\begin{frame}{Partition: Examples}
-  \begin{columns}
-    \column{0.7\textwidth}
-      \begin{itemize}
-        \item Time-marching
-
-          (in particular: PDE solvers)
-          \subitem{Including finite differences}
-        \item Iterative Methods
-          \begin{itemize}
-            \item Solve $Ax=b$ (Jacobi, \dots)
-            \item Optimization (all $P$ on single problem)
-            \item Eigenvalue solvers
-          \end{itemize}
-        \item Cellular Automata (Game of Life :-)
-      \end{itemize}
-    \column{0.3\textwidth}
-      \includegraphics[width=\textwidth]{voronoi-treemap.png}
-  \end{columns}
+\subsubsection{Obtaining partitions}
+% -----------------------------------------------------------------------------
+\begin{frame}{Example}
+  \begin{center}
+    \includegraphics[
+        viewport=9.96cm 3.37cm 23.20cm
+        11.20cm,clip=true,page=7,width=0.8\textwidth
+      ]{Zoltan_Tutorial_Slides.pdf}
+  \end{center}
+  \creditto{E. Boman, K. Devine (Sandia)}
 \end{frame}
-\addimgcredit{Voronoi Treemap: flickr.com/arenamontanus \cc }
+% -----------------------------------------------------------------------------
+\begin{frame}{Example}
+  \begin{center}
+  \includegraphics[
+    viewport=10.89cm 3.62cm 24.19cm
+    11.52cm,clip=true,page=8,width=0.8\textwidth,
+    ]{Zoltan_Tutorial_Slides.pdf}
+  \end{center}
+  \creditto{E. Boman, K. Devine (Sandia)}
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{Example}
+  \begin{center}
+\includegraphics[
+    viewport=10.89cm 3.43cm 24.30cm
+    11.38cm,clip=true,page=9,width=0.8\textwidth
+  ]{Zoltan_Tutorial_Slides.pdf}
+  \end{center}
+  \creditto{E. Boman, K. Devine (Sandia)}
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{A simple strategy}
+  Recursive Coordinate Bisection (`RCB')
+  [Berger, Bokhari `87]
+
+  \begin{center}
+    \includegraphics[ width=0.6\textwidth]{rcb.pdf}
+  \end{center}
+
+  \vspace{-1cm}
+  \plusball Simple
+
+  \plusball Easy to update for changed geometry (`incremental')
+
+  \minusball Easy to fool
+
+  \creditto{E. Boman, K. Devine (Sandia)}
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{Space-filling curves}
+  \begin{center}
+    \includegraphics[ width=0.6\textwidth]{hilbert-curve.pdf}
+
+    Hilbert curve
+  \end{center}
+  \creditto{Wikipedia}
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{Space-filling curves}
+  \begin{center}
+    \includegraphics[height=5cm]{z-curve.pdf}
+
+    Morton curve (``Z curve'')
+  \end{center}
+
+  Easily obtained by bit interleaving!
+  \creditto{Wikipedia}
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{Space-filling curves}
+  \begin{center}
+    \includegraphics[ width=0.45\textwidth]{hilbert-3d.png}
+  \end{center}
+  \creditto{Carlo H. Sequin, UC Berkeley / Wikipedia}
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{Space-filling curves}
+  \begin{center}
+    \includegraphics[height=4cm]{sfc-partition.pdf}
+  \end{center}
+
+  \vspace{-0.5cm}
+  \plusball Simple, even for adaptive meshes
+
+  \plusball Weight-able
+
+  \plusball Cache-happy
+
+  \plusball Easy to update for changed geometry (`incremental')
+
+  \minusball Communication volume?
+
+  \creditto{M. Berger}
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{Space-filling curves: Examples}
+  \begin{center}
+    \includegraphics[height=7cm]{shuttle-1.png}
+  \end{center}
+
+  \creditto{M. Berger, M. Aftosmis}
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{Space-filling curves: Examples}
+  \begin{center}
+    \includegraphics[height=7cm]{shuttle-2.png}
+  \end{center}
+
+  \creditto{M. Berger, M. Aftosmis}
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{Partitioning: Objectives}
+
+  Main goals:
+  \begin{itemize}
+    \item Even distribution of work
+    \item Minimize neighbor communication
+  \end{itemize}
+
+  Criteria:
+  \begin{itemize}
+    \item Cheap! (General problem: NP-complete)
+    \item Incremental
+    \item Partitioning itself is parallel
+  \end{itemize}
+  \uncover<2>{
+    \begin{tikzpicture} [overlay]
+      \node [above left=1cm of current page.south east, draw,drop shadow,fill=white,
+      inner sep=0.5cm,thick]
+        {
+          What if we \emph{don't} have geometry/coordinates?
+        } ;
+    \end{tikzpicture}
+  }
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{Chopping up the communication graph}
+  \begin{center}
+    \includegraphics[height=7cm]{graph-partition.pdf}
+  \end{center}
+
+  \creditto{K. Schloegel, G. Karypis, V. Kumar `00}
+  \uncover<+>{}
+  \uncover<+->{
+    \begin{tikzpicture} [overlay]
+      \node [above left=0.5cm of current page.south east, draw,drop shadow,fill=white,
+      inner xsep=0.5cm,inner ysep=0.5cm,thick, text width=0.6\textwidth]
+        {
+          Great model? How often do we send vertex 1 to B?
+
+          \only<+->{
+            \bigskip
+            Perhaps: assign weight to vertices, edges
+          }
+        } ;
+    \end{tikzpicture}
+  }
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{Partitioning}
+  \begin{center}
+  \Huge Spectral partitioning demo
+  \end{center}
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{Partitioning}
+  \begin{center}
+  \Huge Metis demo
+  \end{center}
+\end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{Finer points}
+  \begin{itemize}
+    \item What if \# inputs $\ne$ \# outputs? \uncover<2>{($\to$
+      hypergraphs)}
+    \item Might want to balance multiple objectives
+      \begin{itemize}
+        \item Types of work
+        \item Types of communication
+      \end{itemize}
+  \end{itemize}
+
+  \bigskip
+  Software packages to look for:
+  \begin{itemize}
+    \item Zoltan (free, LGPL)
+    \item PT-Scotch (free, copyleft)
+    \item Metis (free to use, proprietary, some source available)
+  \end{itemize}
+\end{frame}
 % }}}
 % -----------------------------------------------------------------------------
 \subsection{Pipelines}
@@ -1101,8 +1319,12 @@
           \only<+(1)->{%
           Brent gives lower bound on $P$.\\[1ex]
           Fewer Processors $\Rightarrow$ less cost!\\[1ex]
-          \only<+(1)>{%
+          \only<+(1)->{%
           ``\emph{Algorithm cascading}''
+          }
+
+          \only<+(1)>{%
+          Practically: two kernels enough
           }
           }%
         } ;
@@ -1509,6 +1731,12 @@
     \item GPU?
   \end{itemize}
 \end{frame}
+% -----------------------------------------------------------------------------
+\begin{frame}{Challenge}
+  \begin{center}
+    \Huge Sort (fixed-size) integers using scan
+  \end{center}
+\end{frame}
 % }}}
 % -----------------------------------------------------------------------------
 \subsection[D\&C]{Divide-and-Conquer}
@@ -1700,7 +1928,7 @@
           \subitem{But: Does not matter if deep levels do heavy enough
           processing}
         \item Subtle to map to fixed-width machines (e.g. GPUs)
-          \subitem{Varying data size along tree}
+          \subitem{Varying data size along tree $\to$ Scan!}
         \item Bookkeeping nontrivial for non-$2^n$ sizes
         \item Side benefit: D\&C is generally cache-friendly
       \end{itemize}
@@ -1840,15 +2068,6 @@
       \end{itemize}
   \end{columns}
 \end{frame}
-% }}}
-
-% {{{
-
-% - divide and conquer
-% - General data deps: OpenCL events, OOO queues, partitioning,
-%   implicit dependencies in CL
-% - scan: design a sorting alg based on it
-
 % }}}
 
 \questionframe{}
