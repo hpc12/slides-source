@@ -34,20 +34,40 @@ Patterns}
 \end{frame}
 % }}}
 % -----------------------------------------------------------------------------
-\begin{comment}
 \begin{frame}{Bits and pieces}
   \begin{itemize}
-    \item Don't have a project? Let's fix that \emph{very soon}
-    \item HW5: soon
-    \item HW6: due today
-    \item Dec 5: Last day of regular class
-    \item Dec 12: Legislative Day
-    \item Dec 17/18/\textbf{19}: Project presentations
-    \item Don't have grade reports for HW1\dots4? Talk to me
+    \item HW6: soon
+    \item Dec 12: No class--good luck on finals!
+    \item Dec 17?/18?/\textbf{19}: Project presentations
+      \subitem{Will announce precise date, watch email}
+    \item Project guidelines posted
+    \item Need help with project? Ask/come see us!
   \end{itemize}
 \end{frame}
-\end{comment}
 
+% -----------------------------------------------------------------------------
+\section[Visualization]{Tool of the day: 3D Visualization}
+% -----------------------------------------------------------------------------
+% {{{
+\begin{frame}
+  \begin{center}
+  \Huge 3D vis demo time
+  \end{center}
+\end{frame}
+\begin{frame}{Visualization demo}
+  Software links:
+  \begin{itemize}
+    \item \weblink{https://wci.llnl.gov/codes/silo/}{libsilo} (LLNL ``WCI'', BSD license)
+    \item \weblink{https://wci.llnl.gov/codes/visit/}{VisIt} (LLNL ``WCI'', BSD license)
+  \end{itemize}
+  Alternative:
+  \begin{itemize}
+    \item \weblink{http://paraview.org}{Paraview} (KitWare/LANL, BSD
+      license)
+    \item TecPlot (\$\$\$)
+  \end{itemize}
+\end{frame}
+% }}}
 % -----------------------------------------------------------------------------
 \section{Parallel Patterns}
 % -----------------------------------------------------------------------------
@@ -105,22 +125,6 @@ Patterns}
   \end{itemize}
 \end{frame}
 % -----------------------------------------------------------------------------
-\begin{frame}{Partitioning for neighbor communication}
-  \begin{center}
-    \includegraphics[height=7cm]{mesh-partition.png}
-  \end{center}
-  \uncover<+>{}
-  \uncover<+->{
-    \begin{tikzpicture} [overlay]
-      \node [above left=0.5cm of current page.south east, draw,drop shadow,fill=white,
-      inner xsep=0.5cm,inner ysep=0.5cm,thick]
-        {
-          How can I chop up a domain?
-        } ;
-    \end{tikzpicture}
-  }
-\end{frame}
-% -----------------------------------------------------------------------------
 \begin{frame}{Mapping to Mechanisms: Stencils}
   \begin{columns}
     \column{0.5\textwidth}
@@ -164,7 +168,6 @@ Patterns}
       \item GPU --- 3D?
     \end{itemize}
   \end{columns}
-  \uncover<+>{}
   \uncover<+->{
     \begin{tikzpicture} [overlay]
       \node [above left=0.5cm of current page.south east, draw,drop shadow,fill=white,
@@ -245,6 +248,12 @@ Patterns}
 \end{frame}
 % -----------------------------------------------------------------------------
 \subsubsection{Obtaining partitions}
+% -----------------------------------------------------------------------------
+\begin{frame}{Partitioning for neighbor communication}
+  \begin{center}
+    \includegraphics[height=7cm]{mesh-partition.png}
+  \end{center}
+\end{frame}
 % -----------------------------------------------------------------------------
 \begin{frame}{Example}
   \begin{center}
@@ -786,7 +795,7 @@ Patterns}
     \item The first summand can be made to go away by increasing $P$.
     \item Only valid for shared-memory.
   \end{itemize}
-  \uncover<2>{
+  \uncover<2->{
     \begin{tikzpicture} [overlay]
       \node [above left=1cm of current page.south east, draw,drop shadow,fill=white,
       text width=0.5\textwidth, inner sep=0.5cm,thick]
@@ -795,58 +804,16 @@ Patterns}
 
           \medskip
           Proof sketch?
-        } ;
-    \end{tikzpicture}
-  }
-\end{frame}
-% -----------------------------------------------------------------------------
-\begin{frame}{Brent for Reduction}
-  Again: Number of items $N$.
 
-  \medskip
-  Brent says
-  \[
-    T_P = O\left( \frac {T_1} P + T_\infty\right)
-    = O\left( \frac N P + \log N\right).
-  \]
-  Within a work group: $N=P$ $\Rightarrow$ $T_N=O(\log N)$.
-
-  \pause
-  \bigskip
-  But: Work groups are an illusion! Machine has finite width.
-
-  Thus $T_P > O(\log N)$! How low can we take $P$ before we hurt
-  our asymptotic runtime $T_P$?
-
-  \pause
-  \medskip
-  Asymptotically optimal $T_P=O(\log N)$ for
-  \[
-  P \ge \frac N {\log N}.
-  \]
-  \textbf{Result:} We're free to reduce $P$ by a factor of $(\log N)$
-  without increasing $T_P$. $\Rightarrow$ Do $(\log N)$ items in
-  sequence per work item without increasing asymptotic $T_P$.
-  \uncover<+(1)->{
-    \begin{tikzpicture} [overlay]
-      \node [below left=1cm of current page.north east, draw,drop shadow,fill=white,
-      text width=0.6\textwidth, inner xsep=0.5cm,inner ysep=0.5cm,thick]
-        {
-          Think of this in terms of cost:
-          \[
-            \text{Cost}= P \times T_P
-          \]%
-          \only<+(1)->{%
-          Brent gives lower bound on $P$.\\[1ex]
-          Fewer Processors $\Rightarrow$ less cost!\\[1ex]
-          \only<+(1)->{%
-          ``\emph{Algorithm cascading}''
+          \only<+->{
+            \bigskip
+            What about reduction?
           }
 
-          \only<+(1)>{%
-          Practically: two kernels enough
+          \only<+->{
+            \bigskip
+            What is $P$ for a GPU?
           }
-          }%
         } ;
     \end{tikzpicture}
   }
@@ -1564,6 +1531,17 @@ Patterns}
   }
   
 }
+% -----------------------------------------------------------------------------
+\begin{frame}{General Graphs: Implementations}
+  \begin{itemize}
+    \item \weblink{http://cilkplus.org/}{Intel Cilk(+)} (also: vector math)
+    \item OpenCL (``Events'', Out-of-order queues)
+    \item \weblink{http://threadingbuildingblocks.org/}{Intel Thread Building Blocks}
+    \item \weblink{http://runtime.bordeaux.inria.fr/StarPU/}{StarPU}
+    \item \weblink{http://charm.cs.illinois.edu/}{(Charm++)}
+    \item Many more
+  \end{itemize}
+\end{frame}
 % -----------------------------------------------------------------------------
 \begin{frame}{General Graphs: Issues}
   \begin{columns}

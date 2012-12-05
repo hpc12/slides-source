@@ -1,8 +1,50 @@
 -------------------------------------------------------------------------------
+3D vis demo
+-------------------------------------------------------------------------------
+- 2D visualization: done in class, used dump to images
+- Many other tools: Gnuplot, Python Matplotlib, Matlab
+- 3D data sets: much more tricky
+
+- wrote a program that writes a simple data file, will show source in a bit
+- run visit, comment on major UI components
+- "get what you'd expect when the government does UI design"
+
+- Click "Add" (only thing not greyed out) -> nothing
+- Click "Draw" (only thing not greyed out) -> yay
+
+- Add "Selection > Clip" operator
+- Double click "Clip" operator
+- Point out "Plane tool"
+
+- Add "mesh" plot
+- Apply operators to all plots?
+- Delete clip operator
+
+- Add/Delete Contour plot
+
+- Add "volume" plot
+- Switch to 3D texturing
+- Increase sample count
+- Tweak transfer function
+
+-> SO THAT'S COOL. HOW DO YOU GET YOUR DATA INTO THERE?
+
+- Zap through PDF, show data types
+- node centered, zone centered
+
+- go through source code
+
+-> TWO MORE THINGS
+
+- what about 4D data? (3D+time)
+- run write-time-series
+- show contour plot
+- show vector glyphs
+- mention stream lines
+-------------------------------------------------------------------------------
 Spectral partition demo
 -------------------------------------------------------------------------------
-- re
-- python spectral-partitioning.py
+- python spectral-partitioning.py us-outline.dat us
 - Zoom into DC area
 - move epicenter to NY (or so)
 - Observe that communication graph may be different
@@ -13,14 +55,24 @@ Spectral partition demo
 - move epicenter near line
 - make it heavier?
 
-- great partitions
+- Literature: x^t L x applied to +1/-1 yields 4x edge cut
+- can't minimize over integers
+- fake it: Fix l^2 norm, sum = 0 (first eigenvalue)
+
+- often: great partitions
 - very expensive
 - how to compute, if original problem was so big we needed a partition 
   in the first place--that we don't have?
 - want more than 2 parts?
+
+- python spectral-partitioning.py odd-shape.dat uni
+- balances "vibrational mass" with "small edge cut"
+- not always what you want
+
 -------------------------------------------------------------------------------
 metis partition demo
 -------------------------------------------------------------------------------
+- python metis.py odd-shape.dat uni
 - run
 - dial up number of parts
 - switch on weights
